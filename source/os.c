@@ -11,6 +11,7 @@
 static void OS_TriggerContextSwitch(void);
 static void OS_TaskIdle(void);
 
+
 uint32_t OS_tickCounter;
 
 OS_TCB_S *OS_TCBList[64];
@@ -183,8 +184,7 @@ uint32_t OS_getOSTickCounter(void) {
 
 
 void OS_delayTicks(uint32_t ticks) {
-    uint32_t tick;
-    
+
     OS_ENTER_CRITICAL();
     
     OS_TCBNext->taskTick = ticks;
@@ -218,3 +218,9 @@ void SysTick_Handler(void) {
     OS_tickCounter++;
     OS_Schedule();
 }
+
+
+
+
+
+

@@ -32,7 +32,7 @@ PendSV_Handler:
     LDR       R0, [R0]
     CBZ       R0, PendSV_noSave
 
-    STR       SP, [R0] 
+    STR       SP, [R0]
 
 PendSV_noSave:
     /* SP = OS_taskNext->sp */

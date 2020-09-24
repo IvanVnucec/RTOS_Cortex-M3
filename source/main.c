@@ -31,6 +31,9 @@
 #include <stdlib.h>
 #include "diag/Trace.h"
 
+#include "stm32f10x.h"
+#include "os.h"
+
 // ----------------------------------------------------------------------------
 //
 // Standalone STM32F1 empty sample (trace via DEBUG).
@@ -41,6 +44,35 @@
 // changing the definitions required in system/src/diag/trace_impl.c
 // (currently OS_USE_TRACE_ITM, OS_USE_TRACE_SEMIHOSTING_DEBUG/_STDOUT).
 //
+
+void task1(void);
+void task2(void);
+
+
+uint32_t task1Stack[256], task2Stack[256];
+OS_TCB_S task1TCB, task2TCB;
+
+
+void task1(void) {
+	uint32_t t1 = 0ul;
+
+	while(1) {
+		t1++;
+		OS_delayTicks(10ul);
+	}
+}
+
+
+void task2(void) {
+	uint32_t t2 = 0ul;
+
+	while(2) {
+		t2++;
+		OS_delayTicks(5ul);
+	}
+}
+
+
 
 // ----- main() ---------------------------------------------------------------
 
@@ -56,6 +88,17 @@ main(int argc, char* argv[])
 {
   // At this stage the system clock should have already been configured
   // at high speed.
+	NVIC_SetPriority(PendSV_IRQn, 0xFFFFFFFF);
+	uint32_t realPriority = NVIC_GetPriority(PendSV_IRQn);
+	NVIC_SetPriority(SysTick_IRQn, realPriority-1ul);
+	SystemCoreClockUpdate();
+	SysTick_Config(SystemCoreClock/100);      /* Generate interrupt each 10 ms  */
+	__enable_irq();
+
+	OS_Init();
+	OS_TaskCreate(&task1TCB, task1, 0ul, "task1", task1Stack, 256);
+	OS_TaskCreate(&task2TCB, task2, 1ul, "task2", task2Stack, 256);
+	OS_Start();
 
   // Infinite loop
   while (1)

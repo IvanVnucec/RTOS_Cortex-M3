@@ -15,6 +15,9 @@
 #define OS_EXIT_CRITICAL()  ({asm ("CPSIE I");})
 
 
+extern void PendSV_Handler(void);
+
+
 typedef enum OS_TaskState_ENUM {
     OS_TASK_STATE_DORMANT,
     OS_TASK_STATE_READY,
