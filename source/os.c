@@ -1,16 +1,26 @@
+/*******************************************************************************************************
+ *                         INCLUDE FILES
+ ******************************************************************************************************/
 #include <stdint.h>
 #include "os.h"
 
 
+/*******************************************************************************************************
+ *                         PRIVATE DEFINES
+ ******************************************************************************************************/
 #define NVIC_INT_CTRL *((uint32_t volatile *)0xE000ED04)
 #define NVIC_PENDSVSET_MASK                  0x10000000
 
 #define SIZEOF_TASKIDLESTACK 256
 
 
-static void OS_TriggerContextSwitch(void);
-static void OS_TaskIdle(void);
+/*******************************************************************************************************
+ *                         PRIVATE DATA TYPES
+ ******************************************************************************************************/
 
+/*******************************************************************************************************
+ *                         PRIVATE VARIABLES
+ ******************************************************************************************************/
 uint32_t OS_tickCounter;
 
 OS_TCB_S *OS_TCBList[64];
@@ -25,6 +35,20 @@ OS_TCB_S taskIdleTCB;
 uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
 
 
+/*******************************************************************************************************
+ *                         GLOBAL VARIABLES DEFINITION
+ ******************************************************************************************************/
+
+/*******************************************************************************************************
+ *                         PRIVATE FUNCTIONS DECLARATION
+ ******************************************************************************************************/
+static void OS_TriggerContextSwitch(void);
+static void OS_TaskIdle(void);
+
+
+/*******************************************************************************************************
+ *                         PUBLIC FUNCTIONS DEFINITION
+ ******************************************************************************************************/
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
                 void (*taskPointer)(void), 
                 uint32_t taskPriority,
@@ -161,7 +185,7 @@ void OS_Init(void) {
     OS_TaskCreate(&taskIdleTCB, 
               &OS_TaskIdle, 
               63ul,
-              "taskIdle",
+              (uint8_t *)"taskIdle",
               taskIdleStack, 
               SIZEOF_TASKIDLESTACK);
 
@@ -183,8 +207,7 @@ uint32_t OS_getOSTickCounter(void) {
 
 
 void OS_delayTicks(uint32_t ticks) {
-    uint32_t tick;
-    
+
     OS_ENTER_CRITICAL();
     
     OS_TCBNext->taskTick = ticks;
@@ -203,6 +226,15 @@ void OS_delayTicks(uint32_t ticks) {
 }
 
 
+void SysTick_Handler(void) {
+    OS_tickCounter++;
+    OS_Schedule();
+}
+
+
+/*******************************************************************************************************
+ *                         PRIVATE FUNCTIONS DEFINITION
+ ******************************************************************************************************/
 static void OS_TriggerContextSwitch(void) {
     NVIC_INT_CTRL = NVIC_PENDSVSET_MASK;
 }
@@ -214,7 +246,8 @@ static void OS_TaskIdle(void) {
 }
 
 
-void SysTick_Handler(void) {
-    OS_tickCounter++;
-    OS_Schedule();
-}
+
+
+
+
+
