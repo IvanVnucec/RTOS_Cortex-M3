@@ -13,6 +13,7 @@ RM := rm -rf
 -include system/source/diag/subdir.mk
 -include system/source/cortexm/subdir.mk
 -include system/source/cmsis/subdir.mk
+-include source/Os/subdir.mk
 -include source/subdir.mk
 -include subdir.mk
 -include objects.mk
