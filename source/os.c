@@ -185,7 +185,7 @@ void OS_Init(void) {
     OS_TaskCreate(&taskIdleTCB, 
               &OS_TaskIdle, 
               63ul,
-              "taskIdle",
+              (uint8_t *)"taskIdle",
               taskIdleStack, 
               SIZEOF_TASKIDLESTACK);
 
@@ -226,7 +226,7 @@ void OS_delayTicks(uint32_t ticks) {
 }
 
 
-void SysTick_Handler(void) {
+void SysTick_Handler_callback(void) {
     OS_tickCounter++;
     OS_Schedule();
 }
@@ -244,6 +244,10 @@ static void OS_TaskIdle(void) {
     for (;;)
         ;
 }
+
+
+
+
 
 
 
