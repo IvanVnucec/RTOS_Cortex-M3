@@ -2,10 +2,16 @@
 #define OS_H
 
 
+/*********************************************************************************************************
+ *                       INCLUDE FILES
+ ********************************************************************************************************/
 #include <stdint.h>
 #include "mutex.h"
 
 
+/*********************************************************************************************************
+ *                       CONSTANTS
+ ********************************************************************************************************/
 #define TRUE (1ul)
 #define FALSE (0ul)
 
@@ -15,9 +21,9 @@
 #define OS_EXIT_CRITICAL()  ({asm ("CPSIE I");})
 
 
-extern void PendSV_Handler(void);
-
-
+/*********************************************************************************************************
+ *                       DATA STRUCTURES
+ ********************************************************************************************************/
 typedef enum OS_TaskState_ENUM {
     OS_TASK_STATE_DORMANT,
     OS_TASK_STATE_READY,
@@ -36,26 +42,29 @@ typedef struct OS_TCB_STRUCT {
 } OS_TCB_S;
 
 
-extern void SysTick_Handler(void);
+/*********************************************************************************************************
+ *                       GLOBAL AND STATIC VARIABLES
+ ********************************************************************************************************/
 
 
+/*********************************************************************************************************
+ *                       PUBLIC FUNCTION PROTOTYPES
+ ********************************************************************************************************/
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
                 void (*taskPointer)(void), 
                 uint32_t taskPriority, 
                 uint8_t *taskName,
                 uint32_t *taskStack, 
                 uint32_t taskStackSize);
-
-
 void OS_Schedule(void);
-
 void OS_Init(void);
-
 void OS_Start(void);
-
 uint32_t OS_getOSTickCounter(void);
-
 void OS_delayTicks(uint32_t ticks);
+
+extern void PendSV_Handler(void);
+//extern void SysTick_Handler(void);
+
 
 
 
