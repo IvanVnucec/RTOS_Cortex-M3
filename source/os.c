@@ -226,7 +226,7 @@ void OS_delayTicks(uint32_t ticks) {
 }
 
 
-void SysTick_Handler_callback(void) {
+void SysTick_Handler(void) {
     OS_tickCounter++;
     OS_Schedule();
 }
