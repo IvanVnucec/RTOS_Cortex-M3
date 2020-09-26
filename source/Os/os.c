@@ -1,16 +1,26 @@
+/*******************************************************************************************************
+ *                         INCLUDE FILES
+ ******************************************************************************************************/
 #include <stdint.h>
 #include "os.h"
 
 
+/*******************************************************************************************************
+ *                         PRIVATE DEFINES
+ ******************************************************************************************************/
 #define NVIC_INT_CTRL *((uint32_t volatile *)0xE000ED04)
 #define NVIC_PENDSVSET_MASK                  0x10000000
 
 #define SIZEOF_TASKIDLESTACK 256
 
 
-static void OS_TriggerContextSwitch(void);
-static void OS_TaskIdle(void);
+/*******************************************************************************************************
+ *                         PRIVATE DATA TYPES
+ ******************************************************************************************************/
 
+/*******************************************************************************************************
+ *                         PRIVATE VARIABLES
+ ******************************************************************************************************/
 uint32_t OS_tickCounter;
 
 OS_TCB_S *OS_TCBList[64];
@@ -25,6 +35,20 @@ OS_TCB_S taskIdleTCB;
 uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
 
 
+/*******************************************************************************************************
+ *                         GLOBAL VARIABLES DEFINITION
+ ******************************************************************************************************/
+
+/*******************************************************************************************************
+ *                         PRIVATE FUNCTIONS DECLARATION
+ ******************************************************************************************************/
+static void OS_TriggerContextSwitch(void);
+static void OS_TaskIdle(void);
+
+
+/*******************************************************************************************************
+ *                         PUBLIC FUNCTIONS DEFINITION
+ ******************************************************************************************************/
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
                 void (*taskPointer)(void), 
                 uint32_t taskPriority,
@@ -87,7 +111,6 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     taskTCB->taskPriority = taskPriority;
     taskTCB->taskTick = (uint32_t)0;
     taskTCB->taskName = taskName;
-    taskTCB->mutex = NULL;
 
     OS_TCBList[OS_TCBItemsInList] = taskTCB;
     OS_TCBItemsInList++;
@@ -108,32 +131,23 @@ void OS_Schedule(void) {
 
     OS_ENTER_CRITICAL();
 
-
-    OS_TCBCurrentIndex = OS_TCBNextIndex;
-    OS_TCBCurrent = OS_TCBList[OS_TCBCurrentIndex];
-
+    /* If the current task was running then set it to ready state */
     if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
-        OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
+    	OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
     }
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
-        if (OS_TCBList[i]->taskTick == 0ul) {
-            OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+    	/* If there are pending tasks */
+    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
+    		/* Decrement tick delay or set task ready if delay expired */
+			if (OS_TCBList[i]->taskTick > 0ul) {
+				OS_TCBList[i]->taskTick--;
+			} else {
+				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+			}
+    	}
 
-            if (OS_TCBList[i]->mutex != NULL) {
-                if (*OS_TCBList[i]->mutex == OS_MUTEX_UNLOCKED) {
-                    OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
-                } else {
-                    OS_TCBList[i]->taskState = OS_TASK_STATE_PENDING;
-                }
-            }
-        }
-
-        if (OS_TCBList[i]->taskTick > 0ul) {
-            OS_TCBList[i]->taskTick--;
-        }
-
-        /* choose a thread to run next */
+        /* choose a thread to run next based on threads priority*/
         if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
             OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
             taskMaxPriorityIndex = i;
@@ -144,8 +158,6 @@ void OS_Schedule(void) {
 
     OS_TCBNext = OS_TCBList[OS_TCBNextIndex];
     OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
-
-
 
     OS_EXIT_CRITICAL();
 
@@ -161,7 +173,7 @@ void OS_Init(void) {
     OS_TaskCreate(&taskIdleTCB, 
               &OS_TaskIdle, 
               63ul,
-              "taskIdle",
+              (uint8_t *)"taskIdle",
               taskIdleStack, 
               SIZEOF_TASKIDLESTACK);
 
@@ -183,26 +195,28 @@ uint32_t OS_getOSTickCounter(void) {
 
 
 void OS_delayTicks(uint32_t ticks) {
-    uint32_t tick;
-    
+
     OS_ENTER_CRITICAL();
     
-    OS_TCBNext->taskTick = ticks;
-    OS_TCBNext->taskState = OS_TASK_STATE_PENDING;
+    OS_TCBCurrent->taskTick = ticks;
+    OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
 
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
-
-    /*
-    tick = OS_getOSTickCounter();
-
-    while (OS_getOSTickCounter() - tick < ticks);
-    */
    
 }
 
 
+void SysTick_Handler(void) {
+    OS_tickCounter++;
+    OS_Schedule();
+}
+
+
+/*******************************************************************************************************
+ *                         PRIVATE FUNCTIONS DEFINITION
+ ******************************************************************************************************/
 static void OS_TriggerContextSwitch(void) {
     NVIC_INT_CTRL = NVIC_PENDSVSET_MASK;
 }
@@ -214,7 +228,8 @@ static void OS_TaskIdle(void) {
 }
 
 
-void SysTick_Handler(void) {
-    OS_tickCounter++;
-    OS_Schedule();
-}
+
+
+
+
+
