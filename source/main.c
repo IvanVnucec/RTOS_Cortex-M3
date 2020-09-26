@@ -2,6 +2,7 @@
  *                         INCLUDE FILES
  ******************************************************************************************************/
 #include "main.h"
+#include "diag/Trace.h"
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
@@ -16,8 +17,6 @@
  ******************************************************************************************************/
 static uint32_t task1Stack[256ul], task2Stack[256ul];
 static OS_TCB_S task1TCB, task2TCB;
-
-OS_Mutex_T mutex1;
 
 uint32_t cnt;
 
@@ -64,8 +63,6 @@ int main(void) {
 			task2Stack,
 			256ul);
 
-	OS_MutexInit(&mutex1);
-
 	OS_Start();
 
 	/* This line should not be reached if OS is initialized properly */
@@ -83,12 +80,10 @@ static void task1(void) {
 	uint32_t t1 = 0ul;
 
 	while(1) {
+		trace_puts("Task1");
 		t1++;
-
-		OS_MutexPend(&mutex1);
 		cnt++;
-		OS_delayTicks(2ul);
-		OS_MutexPend(&mutex1);
+		OS_delayTicks(1000ul);
 	}
 }
 
@@ -97,11 +92,10 @@ static void task2(void) {
 	uint32_t t2 = 0ul;
 
 	while(2) {
+		trace_puts("Task2");
 		t2++;
-
-		OS_MutexPend(&mutex1);
 		cnt++;
-		OS_MutexPend(&mutex1);
+		OS_delayTicks(2000ul);
 	}
 }
 
