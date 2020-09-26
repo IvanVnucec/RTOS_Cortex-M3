@@ -6,7 +6,6 @@
  *                         INCLUDE FILES
  ******************************************************************************************************/
 #include <stdint.h>
-#include "mutex.h"
 
 
 /*******************************************************************************************************
@@ -38,7 +37,6 @@ typedef struct OS_TCB_STRUCT {
     uint32_t taskPriority;
     uint32_t taskTick;
     uint8_t *taskName;
-    OS_Mutex_E *mutex;
 } OS_TCB_S;
 
 
