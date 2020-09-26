@@ -2,6 +2,7 @@
  *                         INCLUDE FILES
  ******************************************************************************************************/
 #include "mutex.h"
+#include "mutex_forward.h"
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
@@ -26,6 +27,44 @@
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
+void OS_MutexInit(OS_Mutex_T *mutex) {
+	OS_ENTER_CRITICAL();
+
+	*mutex = OS_MUTEX_STATE_FREE;
+
+	OS_EXIT_CRITICAL();
+}
+
+
+void OS_MutexPend(OS_Mutex_T *mutex) {
+	OS_ENTER_CRITICAL();
+
+	OS_TCBCurrent->mutex = mutex;
+
+	if (*mutex == OS_MUTEX_STATE_FREE) {
+		*mutex = OS_MUTEX_STATE_OWNED;
+
+		OS_EXIT_CRITICAL();
+
+	} else {
+		/* put current task to pending for mutex */
+		OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
+		OS_EXIT_CRITICAL();
+
+		/* call scheduler */
+		OS_Schedule();
+	}
+}
+
+
+void OS_MutexPost(OS_Mutex_T *mutex) {
+	OS_ENTER_CRITICAL();
+
+	*mutex = OS_MUTEX_STATE_FREE;
+
+	OS_EXIT_CRITICAL();
+}
+
 
 /******************************************** ***********************************************************
  *                         PRIVATE FUNCTIONS DEFINITION

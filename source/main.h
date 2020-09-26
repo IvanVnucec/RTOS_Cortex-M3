@@ -10,8 +10,9 @@
 
 #include "diag/Trace.h"
 #include "stm32f10x.h"
-#include "os.h"
 
+#include "os.h"
+#include "mutex.h"
 
 /*******************************************************************************************************
  *                         CONSTANTS
