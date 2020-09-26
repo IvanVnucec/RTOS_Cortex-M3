@@ -1,7 +1,8 @@
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
-#include "main.h"
+#include "mutex.h"
+#include "mutex_forward.h"
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
@@ -14,13 +15,6 @@
 /*******************************************************************************************************
  *                         PRIVATE VARIABLES
  ******************************************************************************************************/
-static uint32_t task1Stack[256ul], task2Stack[256ul];
-static OS_TCB_S task1TCB, task2TCB;
-
-OS_Mutex_T mutex1;
-
-uint32_t cnt;
-
 
 /*******************************************************************************************************
  *                         GLOBAL VARIABLES DEFINITION
@@ -29,79 +23,50 @@ uint32_t cnt;
 /*******************************************************************************************************
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
-static void task1(void);
-static void task2(void);
-
 
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
-int main(void) {
-	/* Configure priority of SysTick and PendSV */
-	NVIC_SetPriority(PendSV_IRQn, 0xFFFFFFFF);
-	uint32_t realPriority = NVIC_GetPriority(PendSV_IRQn);
-	NVIC_SetPriority(SysTick_IRQn, realPriority-1ul);
+void OS_MutexInit(OS_Mutex_T *mutex) {
+	OS_ENTER_CRITICAL();
 
-	/* Configure SysTick clock to generate tick every 1 ms */
-	SystemCoreClockUpdate();
-	SysTick_Config(SystemCoreClock/1000ul);
-	__enable_irq();
+	*mutex = OS_MUTEX_STATE_FREE;
 
-	/* Start OS */
-	OS_Init();
-
-	OS_TaskCreate(&task1TCB,
-			task1,
-			0ul,
-			(uint8_t *)"task1",
-			task1Stack,
-			256ul);
-
-	OS_TaskCreate(&task2TCB,
-			task2,
-			1ul,
-			(uint8_t *)"task2",
-			task2Stack,
-			256ul);
-
-	OS_MutexInit(&mutex1);
-
-	OS_Start();
-
-	/* This line should not be reached if OS is initialized properly */
-	for(;;);
-
-	return 0;
+	OS_EXIT_CRITICAL();
 }
 
+
+void OS_MutexPend(OS_Mutex_T *mutex) {
+	OS_ENTER_CRITICAL();
+
+	OS_TCBCurrent->mutex = mutex;
+
+	if (*mutex == OS_MUTEX_STATE_FREE) {
+		*mutex = OS_MUTEX_STATE_OWNED;
+
+		OS_EXIT_CRITICAL();
+
+	} else {
+		/* put current task to pending for mutex */
+		OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
+		OS_EXIT_CRITICAL();
+
+		/* call scheduler */
+		OS_Schedule();
+	}
+}
+
+
+void OS_MutexPost(OS_Mutex_T *mutex) {
+	OS_ENTER_CRITICAL();
+
+	*mutex = OS_MUTEX_STATE_FREE;
+
+	OS_EXIT_CRITICAL();
+}
 
 
 /******************************************** ***********************************************************
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
-static void task1(void) {
-	uint32_t t1 = 0ul;
-
-	while(1) {
-		t1++;
-
-		OS_MutexPend(&mutex1);
-		cnt++;
-		OS_delayTicks(2ul);
-		OS_MutexPend(&mutex1);
-	}
-}
-
-
-static void task2(void) {
-	uint32_t t2 = 0ul;
-
-	while(2) {
-		t2++;
-
-		OS_MutexPend(&mutex1);
-		cnt++;
-		OS_MutexPend(&mutex1);
-	}
-}
 

@@ -1,18 +1,15 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef MUTEX_H
+#define MUTEX_H
 
 
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdint.h>
 
-#include "diag/Trace.h"
-#include "stm32f10x.h"
+#include "os_forward.h"
+#include "mutex_forward.h"
 
-#include "os.h"
-#include "mutex.h"
 
 /*******************************************************************************************************
  *                         CONSTANTS
@@ -22,18 +19,18 @@
  *                         DATA STRUCTURES
  ******************************************************************************************************/
 
-
-
 /*******************************************************************************************************
  *                         GLOBAL AND STATIC VARIABLES
  ******************************************************************************************************/
+extern OS_TCB_S *OS_TCBCurrent;
 
 
 /*******************************************************************************************************
  *                         PUBLIC FUNCTION PROTOTYPES
  ******************************************************************************************************/
-void SysTick_Handler(void);
-void PendSV_Handler(void);
-int main(void);
+void OS_MutexInit(OS_Mutex_T *mutex);
+void OS_MutexPend(OS_Mutex_T *mutex);
+void OS_MutexPost(OS_Mutex_T *mutex);
 
-#endif /* #ifndef MAIN_H */
+
+#endif /* #ifndef MUTEX_H */
