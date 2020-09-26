@@ -11,7 +11,15 @@
 #define NVIC_INT_CTRL *((uint32_t volatile *)0xE000ED04)
 #define NVIC_PENDSVSET_MASK                  0x10000000
 
-#define SIZEOF_TASKIDLESTACK 256
+#define SIZEOF_TASKIDLESTACK (256)
+
+
+
+#define OS_1MILISECOND_TO_TICKS	(OS_MS_TO_TICKS(1ul))
+#define OS_1SECOND_TO_TICKS		(1000ul * OS_1MILISECOND_TO_TICKS)
+#define OS_1MINUTE_TO_TICKS 	(60ul * OS_1SECOND_TO_TICKS)
+#define OS_1HOUR_TO_TICKS		(60ul * OS_1MINUTE_TO_TICKS)
+#define OS_1DAY_TO_TICKS		(24ul * OS_1HOUR_TO_TICKS)
 
 
 /*******************************************************************************************************
@@ -205,6 +213,20 @@ void OS_delayTicks(uint32_t ticks) {
 
     OS_Schedule();
    
+}
+
+
+void OS_delayTime(uint32_t days,
+		uint32_t hours,
+		uint32_t minutes,
+		uint32_t seconds,
+		uint32_t miliseconds) {
+
+	OS_delayTicks(days * OS_1DAY_TO_TICKS +
+			hours * OS_1HOUR_TO_TICKS +
+			minutes * OS_1MINUTE_TO_TICKS +
+			seconds * OS_1SECOND_TO_TICKS +
+			miliseconds * OS_1MILISECOND_TO_TICKS);
 }
 
 

@@ -38,9 +38,9 @@ int main(void) {
 	uint32_t realPriority = NVIC_GetPriority(PendSV_IRQn);
 	NVIC_SetPriority(SysTick_IRQn, realPriority-1ul);
 
-	/* Configure SysTick clock to generate tick every 10 ms */
+	/* Configure SysTick clock to generate tick every 1 ms */
 	SystemCoreClockUpdate();
-	SysTick_Config(SystemCoreClock/100ul);
+	SysTick_Config(SystemCoreClock/1000ul);
 	__enable_irq();
 
 	/* Start OS */
@@ -78,7 +78,7 @@ static void task1(void) {
 
 	while(1) {
 		t1++;
-		OS_delayTicks(100ul);
+		OS_delayTicks(1ul);
 	}
 }
 
@@ -88,7 +88,7 @@ static void task2(void) {
 
 	while(2) {
 		t2++;
-		OS_delayTicks(50ul);
+		OS_delayTime(0ul, 0ul, 0ul, 0ul, 2ul);
 	}
 }
 
