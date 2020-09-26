@@ -19,6 +19,9 @@
 #define OS_ENTER_CRITICAL() ({asm ("CPSID I");})
 #define OS_EXIT_CRITICAL()  ({asm ("CPSIE I");})
 
+#define OS_SCHED_FREQ_HZ	(1000ul)
+#define OS_MS_TO_TICKS(ms)	(ms * OS_SCHED_FREQ_HZ / 1000ul)
+
 
 /*******************************************************************************************************
  *                         DATA STRUCTURES
@@ -59,6 +62,11 @@ void OS_Init(void);
 void OS_Start(void);
 uint32_t OS_getOSTickCounter(void);
 void OS_delayTicks(uint32_t ticks);
+void OS_delayTime(uint32_t days,
+		uint32_t hours,
+		uint32_t minutes,
+		uint32_t seconds,
+		uint32_t miliseconds);
 
 void PendSV_Handler(void);
 void SysTick_Handler(void);
