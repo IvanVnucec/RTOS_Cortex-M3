@@ -27,22 +27,22 @@
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
-void OS_MutexInit(OS_Mutex_T *mutex) {
+void OS_MutexInit(OS_Mutex_S *mutex) {
 	OS_ENTER_CRITICAL();
 
-	*mutex = OS_MUTEX_STATE_FREE;
+	mutex->state = OS_MUTEX_STATE_FREE;
 
 	OS_EXIT_CRITICAL();
 }
 
 
-void OS_MutexPend(OS_Mutex_T *mutex) {
+void OS_MutexPend(OS_Mutex_S *mutex) {
 	OS_ENTER_CRITICAL();
 
 	OS_TCBCurrent->mutex = mutex;
 
-	if (*mutex == OS_MUTEX_STATE_FREE) {
-		*mutex = OS_MUTEX_STATE_OWNED;
+	if (mutex->state == OS_MUTEX_STATE_FREE) {
+		mutex->state = OS_MUTEX_STATE_OWNED;
 
 		OS_EXIT_CRITICAL();
 
@@ -57,10 +57,10 @@ void OS_MutexPend(OS_Mutex_T *mutex) {
 }
 
 
-void OS_MutexPost(OS_Mutex_T *mutex) {
+void OS_MutexPost(OS_Mutex_S *mutex) {
 	OS_ENTER_CRITICAL();
 
-	*mutex = OS_MUTEX_STATE_FREE;
+	mutex->state = OS_MUTEX_STATE_FREE;
 
 	OS_EXIT_CRITICAL();
 }

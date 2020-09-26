@@ -145,6 +145,16 @@ void OS_Schedule(void) {
     }
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
+    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
+    		if (OS_TCBList[i]->taskTick == 0ul) {
+    			if (OS_TCBList[i]->mutex != NULL) {
+    				if (OS_TCBList[i]->mutex->state == OS_MUTEX_STATE_FREE) {
+    					OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+    				}
+    			}
+    		}
+    	}
+
         /* choose a thread to run next based on threads priority*/
         if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
             OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
@@ -221,7 +231,7 @@ void OS_delayTime(uint32_t days,
 
 
 void SysTick_Handler(void) {
-	int i;
+	uint32_t i;
 
 	OS_ENTER_CRITICAL();
 

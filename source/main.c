@@ -20,6 +20,8 @@ static OS_TCB_S task1TCB, task2TCB;
 
 uint32_t cnt;
 
+OS_Mutex_S mutex1;
+
 
 /*******************************************************************************************************
  *                         GLOBAL VARIABLES DEFINITION
@@ -63,6 +65,8 @@ int main(void) {
 			task2Stack,
 			256ul);
 
+	OS_MutexInit(&mutex1);
+
 	OS_Start();
 
 	/* This line should not be reached if OS is initialized properly */
@@ -82,8 +86,11 @@ static void task1(void) {
 	while(1) {
 		trace_puts("Task1");
 		t1++;
+
+		OS_MutexPend(&mutex1);
 		cnt++;
-		OS_delayTicks(1000ul);
+		OS_delayTicks(10ul);
+		OS_MutexPost(&mutex1);
 	}
 }
 
@@ -94,8 +101,10 @@ static void task2(void) {
 	while(2) {
 		trace_puts("Task2");
 		t2++;
+
+		OS_MutexPend(&mutex1);
 		cnt++;
-		OS_delayTicks(2000ul);
+		OS_MutexPost(&mutex1);
 	}
 }
 
