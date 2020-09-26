@@ -145,16 +145,6 @@ void OS_Schedule(void) {
     }
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
-    	/* If there are pending tasks */
-    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
-    		/* Decrement tick delay or set task ready if delay expired */
-			if (OS_TCBList[i]->taskTick > 0ul) {
-				OS_TCBList[i]->taskTick--;
-			} else {
-				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
-			}
-    	}
-
         /* choose a thread to run next based on threads priority*/
         if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
             OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
@@ -231,7 +221,26 @@ void OS_delayTime(uint32_t days,
 
 
 void SysTick_Handler(void) {
+	int i;
+
+	OS_ENTER_CRITICAL();
+
     OS_tickCounter++;
+
+    for (i = 0ul; i < OS_TCBItemsInList; i++) {
+    	/* If there are pending tasks */
+    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
+    		/* Decrement tick delay or set task ready if delay expired */
+			if (OS_TCBList[i]->taskTick > 0ul) {
+				OS_TCBList[i]->taskTick--;
+			} else {
+				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+			}
+    	}
+    }
+
+    OS_EXIT_CRITICAL();
+
     OS_Schedule();
 }
 
