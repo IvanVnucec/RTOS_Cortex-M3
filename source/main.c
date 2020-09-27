@@ -2,6 +2,7 @@
  *                         INCLUDE FILES
  ******************************************************************************************************/
 #include "main.h"
+#include "diag/Trace.h"
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
@@ -16,6 +17,10 @@
  ******************************************************************************************************/
 static uint32_t task1Stack[256ul], task2Stack[256ul];
 static OS_TCB_S task1TCB, task2TCB;
+
+uint32_t cnt;
+
+OS_Mutex_S mutex1;
 
 
 /*******************************************************************************************************
@@ -38,9 +43,9 @@ int main(void) {
 	uint32_t realPriority = NVIC_GetPriority(PendSV_IRQn);
 	NVIC_SetPriority(SysTick_IRQn, realPriority-1ul);
 
-	/* Configure SysTick clock to generate tick every 10 ms */
+	/* Configure SysTick clock to generate tick every 1 ms */
 	SystemCoreClockUpdate();
-	SysTick_Config(SystemCoreClock/100ul);
+	SysTick_Config(SystemCoreClock/1000ul);
 	__enable_irq();
 
 	/* Start OS */
@@ -60,6 +65,8 @@ int main(void) {
 			task2Stack,
 			256ul);
 
+	OS_MutexInit(&mutex1);
+
 	OS_Start();
 
 	/* This line should not be reached if OS is initialized properly */
@@ -70,7 +77,7 @@ int main(void) {
 
 
 
-/*******************************************************************************************************
+/******************************************** ***********************************************************
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
 static void task1(void) {
@@ -78,7 +85,12 @@ static void task1(void) {
 
 	while(1) {
 		t1++;
-		OS_delayTicks(100ul);
+
+		OS_MutexPend(&mutex1);
+		trace_printf("%d\n", cnt);
+		OS_MutexPost(&mutex1);
+
+		OS_delayTicks(1ul);
 	}
 }
 
@@ -88,7 +100,12 @@ static void task2(void) {
 
 	while(2) {
 		t2++;
-		OS_delayTicks(50ul);
+
+		OS_MutexPend(&mutex1);
+		cnt++;
+		OS_delayTicks(1000ul);
+		OS_MutexPost(&mutex1);
+
 	}
 }
 

@@ -6,7 +6,9 @@
  *                         INCLUDE FILES
  ******************************************************************************************************/
 #include <stdint.h>
-#include "mutex.h"
+
+#include "os_forward.h"
+#include "mutex_forward.h"
 
 
 /*******************************************************************************************************
@@ -20,26 +22,29 @@
 #define OS_ENTER_CRITICAL() ({asm ("CPSID I");})
 #define OS_EXIT_CRITICAL()  ({asm ("CPSIE I");})
 
+#define OS_SCHED_FREQ_HZ	(1000ul)
+#define OS_MS_TO_TICKS(ms)	(ms * OS_SCHED_FREQ_HZ / 1000ul)
+
 
 /*******************************************************************************************************
  *                         DATA STRUCTURES
  ******************************************************************************************************/
-typedef enum OS_TaskState_ENUM {
+enum OS_TaskState_ENUM {
     OS_TASK_STATE_DORMANT,
     OS_TASK_STATE_READY,
     OS_TASK_STATE_RUNNING,
     OS_TASK_STATE_PENDING
-} OS_TaskState_E;
+};
 
 
-typedef struct OS_TCB_STRUCT {
+struct OS_TCB_STRUCT {
     uint32_t *sp;
     OS_TaskState_E taskState;
     uint32_t taskPriority;
     uint32_t taskTick;
     uint8_t *taskName;
-    OS_Mutex_E *mutex;
-} OS_TCB_S;
+    OS_Mutex_S *mutex;
+};
 
 
 /*******************************************************************************************************
@@ -61,6 +66,11 @@ void OS_Init(void);
 void OS_Start(void);
 uint32_t OS_getOSTickCounter(void);
 void OS_delayTicks(uint32_t ticks);
+void OS_delayTime(uint32_t days,
+		uint32_t hours,
+		uint32_t minutes,
+		uint32_t seconds,
+		uint32_t miliseconds);
 
 void PendSV_Handler(void);
 void SysTick_Handler(void);

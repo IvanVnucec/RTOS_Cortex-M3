@@ -1,41 +1,84 @@
+/*******************************************************************************************************
+ *                         INCLUDE FILES
+ ******************************************************************************************************/
 #include "mutex.h"
-#include "os.h"
+#include "mutex_forward.h"
 
-extern OS_TCB_S *OS_TCBNext;
+/*******************************************************************************************************
+ *                         PRIVATE DEFINES
+ ******************************************************************************************************/
 
+/*******************************************************************************************************
+ *                         PRIVATE DATA TYPES
+ ******************************************************************************************************/
 
-void OS_MutexInit(OS_Mutex_E *mutex) {
-    if (mutex != (void *)0) {
-        *mutex = OS_MUTEX_UNLOCKED;
-    }
+/*******************************************************************************************************
+ *                         PRIVATE VARIABLES
+ ******************************************************************************************************/
+
+/*******************************************************************************************************
+ *                         GLOBAL VARIABLES DEFINITION
+ ******************************************************************************************************/
+
+/*******************************************************************************************************
+ *                         PRIVATE FUNCTIONS DECLARATION
+ ******************************************************************************************************/
+
+/*******************************************************************************************************
+ *                         PUBLIC FUNCTIONS DEFINITION
+ ******************************************************************************************************/
+void OS_MutexInit(OS_Mutex_S *mutex) {
+	OS_ENTER_CRITICAL();
+
+	mutex->state = OS_MUTEX_STATE_FREE;
+	mutex->owner = NULL;
+
+	OS_EXIT_CRITICAL();
 }
 
 
-void OS_MutexLock(OS_Mutex_E *mutex) {
-    OS_ENTER_CRITICAL();
+void OS_MutexPend(OS_Mutex_S *mutex) {
+	OS_ENTER_CRITICAL();
 
-    if (mutex != NULL) {
-        /* if already locked */
-        if (*mutex == OS_MUTEX_LOCKED) {
-            OS_TCBNext->taskState = OS_TASK_STATE_PENDING;
-            OS_TCBNext->mutex = mutex;
-            OS_EXIT_CRITICAL();
+	OS_TCBCurrent->mutex = mutex;
 
-            OS_Schedule();
-        } else {
-            *mutex = OS_MUTEX_LOCKED;
-            OS_EXIT_CRITICAL();
-        }
-    }
+	if (mutex->state == OS_MUTEX_STATE_FREE) {
+		mutex->state = OS_MUTEX_STATE_OWNED;
+		mutex->owner = OS_TCBCurrent;
+
+		OS_EXIT_CRITICAL();
+
+	} else {
+		/* put current task to pending for mutex */
+		OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
+		OS_EXIT_CRITICAL();
+
+		/* call scheduler */
+		OS_Schedule();
+
+		/* After a mutex is free again we need to pend it */
+		OS_MutexPend(mutex);
+	}
 }
 
 
-void OS_MutexUnlock(OS_Mutex_E *mutex) {
-    OS_ENTER_CRITICAL();
+void OS_MutexPost(OS_Mutex_S *mutex) {
+	OS_ENTER_CRITICAL();
 
-    if (mutex != (void *)0) {
-        *mutex = OS_MUTEX_UNLOCKED;
-    }
+	/* only the owner of mutex can post it */
+	if (mutex->owner == OS_TCBCurrent) {
+		mutex->state = OS_MUTEX_STATE_FREE;
+		mutex->owner->mutex = NULL;
+		mutex->owner = NULL;
 
-    OS_EXIT_CRITICAL();
+		OS_Schedule();
+	}
+
+	OS_EXIT_CRITICAL();
 }
+
+
+/******************************************** ***********************************************************
+ *                         PRIVATE FUNCTIONS DEFINITION
+ ******************************************************************************************************/
+

@@ -11,7 +11,15 @@
 #define NVIC_INT_CTRL *((uint32_t volatile *)0xE000ED04)
 #define NVIC_PENDSVSET_MASK                  0x10000000
 
-#define SIZEOF_TASKIDLESTACK 256
+#define SIZEOF_TASKIDLESTACK (256)
+
+
+
+#define OS_1MILISECOND_TO_TICKS	(OS_MS_TO_TICKS(1ul))
+#define OS_1SECOND_TO_TICKS		(1000ul * OS_1MILISECOND_TO_TICKS)
+#define OS_1MINUTE_TO_TICKS 	(60ul * OS_1SECOND_TO_TICKS)
+#define OS_1HOUR_TO_TICKS		(60ul * OS_1MINUTE_TO_TICKS)
+#define OS_1DAY_TO_TICKS		(24ul * OS_1HOUR_TO_TICKS)
 
 
 /*******************************************************************************************************
@@ -111,7 +119,6 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     taskTCB->taskPriority = taskPriority;
     taskTCB->taskTick = (uint32_t)0;
     taskTCB->taskName = taskName;
-    taskTCB->mutex = NULL;
 
     OS_TCBList[OS_TCBItemsInList] = taskTCB;
     OS_TCBItemsInList++;
@@ -126,38 +133,45 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 
 void OS_Schedule(void) {
     uint32_t i;
+    uint32_t flagLocked;
     uint32_t taskMaxPriorityIndex;
 
     taskMaxPriorityIndex = 0ul;
 
-    OS_ENTER_CRITICAL();
+	OS_ENTER_CRITICAL();
 
-
-    OS_TCBCurrentIndex = OS_TCBNextIndex;
-    OS_TCBCurrent = OS_TCBList[OS_TCBCurrentIndex];
-
+    /* If the current task was running then set it to ready state */
     if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
-        OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
+    	OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
     }
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
-        if (OS_TCBList[i]->taskTick == 0ul) {
-            OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
+    		flagLocked = FALSE;
 
-            if (OS_TCBList[i]->mutex != NULL) {
-                if (*OS_TCBList[i]->mutex == OS_MUTEX_UNLOCKED) {
-                    OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
-                } else {
-                    OS_TCBList[i]->taskState = OS_TASK_STATE_PENDING;
-                }
-            }
-        }
+    		/* If locked by OS_tick */
+    		if (OS_TCBList[i]->taskTick != 0ul) {
+    			flagLocked |= TRUE;
+    		}
 
-        if (OS_TCBList[i]->taskTick > 0ul) {
-            OS_TCBList[i]->taskTick--;
-        }
+    		/* If locked by Mutex (excluding owner of the mutex) */
+			if (OS_TCBList[i]->mutex != NULL) {
+				if (OS_TCBList[i]->mutex->state == OS_MUTEX_STATE_OWNED) {
+					if (OS_TCBList[i]->mutex->owner != NULL) {
+						if (OS_TCBList[i]->mutex->owner != OS_TCBList[i]) {
+							flagLocked |= TRUE;
+						}
+					}
+				}
+			}
 
-        /* choose a thread to run next */
+			/* If not locked at all */
+			if (flagLocked == FALSE) {
+				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+			}
+    	}
+
+        /* choose a thread to run next based on threads priority*/
         if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
             OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
             taskMaxPriorityIndex = i;
@@ -168,8 +182,6 @@ void OS_Schedule(void) {
 
     OS_TCBNext = OS_TCBList[OS_TCBNextIndex];
     OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
-
-
 
     OS_EXIT_CRITICAL();
 
@@ -210,24 +222,45 @@ void OS_delayTicks(uint32_t ticks) {
 
     OS_ENTER_CRITICAL();
     
-    OS_TCBNext->taskTick = ticks;
-    OS_TCBNext->taskState = OS_TASK_STATE_PENDING;
+    OS_TCBCurrent->taskTick = ticks;
+    OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
 
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
-
-    /*
-    tick = OS_getOSTickCounter();
-
-    while (OS_getOSTickCounter() - tick < ticks);
-    */
    
 }
 
 
+void OS_delayTime(uint32_t days,
+		uint32_t hours,
+		uint32_t minutes,
+		uint32_t seconds,
+		uint32_t miliseconds) {
+
+	OS_delayTicks(days * OS_1DAY_TO_TICKS +
+			hours * OS_1HOUR_TO_TICKS +
+			minutes * OS_1MINUTE_TO_TICKS +
+			seconds * OS_1SECOND_TO_TICKS +
+			miliseconds * OS_1MILISECOND_TO_TICKS);
+}
+
+
 void SysTick_Handler(void) {
+	uint32_t i;
+
+	OS_ENTER_CRITICAL();
+
     OS_tickCounter++;
+
+    for (i = 0ul; i < OS_TCBItemsInList; i++) {
+		if (OS_TCBList[i]->taskTick > 0ul) {
+			OS_TCBList[i]->taskTick--;
+		}
+    }
+
+    OS_EXIT_CRITICAL();
+
     OS_Schedule();
 }
 
