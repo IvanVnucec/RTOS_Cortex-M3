@@ -7,6 +7,9 @@
  ******************************************************************************************************/
 #include <stdint.h>
 
+#include "os_forward.h"
+#include "mutex_forward.h"
+
 
 /*******************************************************************************************************
  *                         CONSTANTS
@@ -26,21 +29,22 @@
 /*******************************************************************************************************
  *                         DATA STRUCTURES
  ******************************************************************************************************/
-typedef enum OS_TaskState_ENUM {
+enum OS_TaskState_ENUM {
     OS_TASK_STATE_DORMANT,
     OS_TASK_STATE_READY,
     OS_TASK_STATE_RUNNING,
     OS_TASK_STATE_PENDING
-} OS_TaskState_E;
+};
 
 
-typedef struct OS_TCB_STRUCT {
+struct OS_TCB_STRUCT {
     uint32_t *sp;
     OS_TaskState_E taskState;
     uint32_t taskPriority;
     uint32_t taskTick;
     uint8_t *taskName;
-} OS_TCB_S;
+    OS_Mutex_S *mutex;
+};
 
 
 /*******************************************************************************************************

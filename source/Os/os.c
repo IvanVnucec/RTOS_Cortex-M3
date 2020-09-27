@@ -133,11 +133,12 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 
 void OS_Schedule(void) {
     uint32_t i;
+    uint32_t flagLocked;
     uint32_t taskMaxPriorityIndex;
 
     taskMaxPriorityIndex = 0ul;
 
-    OS_ENTER_CRITICAL();
+	OS_ENTER_CRITICAL();
 
     /* If the current task was running then set it to ready state */
     if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
@@ -145,6 +146,31 @@ void OS_Schedule(void) {
     }
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
+    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
+    		flagLocked = FALSE;
+
+    		/* If locked by OS_tick */
+    		if (OS_TCBList[i]->taskTick != 0ul) {
+    			flagLocked |= TRUE;
+    		}
+
+    		/* If locked by Mutex (excluding owner of the mutex) */
+			if (OS_TCBList[i]->mutex != NULL) {
+				if (OS_TCBList[i]->mutex->state == OS_MUTEX_STATE_OWNED) {
+					if (OS_TCBList[i]->mutex->owner != NULL) {
+						if (OS_TCBList[i]->mutex->owner != OS_TCBList[i]) {
+							flagLocked |= TRUE;
+						}
+					}
+				}
+			}
+
+			/* If not locked at all */
+			if (flagLocked == FALSE) {
+				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+			}
+    	}
+
         /* choose a thread to run next based on threads priority*/
         if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
             OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
@@ -221,22 +247,16 @@ void OS_delayTime(uint32_t days,
 
 
 void SysTick_Handler(void) {
-	int i;
+	uint32_t i;
 
 	OS_ENTER_CRITICAL();
 
     OS_tickCounter++;
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
-    	/* If there are pending tasks */
-    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
-    		/* Decrement tick delay or set task ready if delay expired */
-			if (OS_TCBList[i]->taskTick > 0ul) {
-				OS_TCBList[i]->taskTick--;
-			} else {
-				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
-			}
-    	}
+		if (OS_TCBList[i]->taskTick > 0ul) {
+			OS_TCBList[i]->taskTick--;
+		}
     }
 
     OS_EXIT_CRITICAL();
