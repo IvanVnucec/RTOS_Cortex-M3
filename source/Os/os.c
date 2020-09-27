@@ -29,7 +29,7 @@
  ******************************************************************************************************/
 uint32_t OS_tickCounter;
 
-OS_TCB_S *OS_TCBList[64];
+OS_TCB_S *OS_TCBList[OS_TCB_LIST_LENGTH];
 uint32_t OS_TCBItemsInList;
 uint32_t OS_TCBCurrentIndex;
 uint32_t OS_TCBNextIndex;
@@ -123,7 +123,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     taskTCB->taskName = taskName;
 
     /* if there is no room in OS_TCBList */
-    if (OS_TCBItemsInList >= 64ul) {
+    if (OS_TCBItemsInList >= OS_TCB_LIST_LENGTH) {
         errLocal = OS_ERROR_TASK_NOT_CREATED;
     }
 
@@ -207,7 +207,7 @@ void OS_Init(OS_Error_E *err) {
 
     OS_TaskCreate(&taskIdleTCB, 
               &OS_TaskIdle, 
-              63ul,
+			  OS_IDLE_TASK_PRIORITY,
               (uint8_t *)"taskIdle",
               taskIdleStack, 
               SIZEOF_TASKIDLESTACK,
