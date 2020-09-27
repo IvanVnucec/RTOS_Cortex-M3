@@ -26,6 +26,7 @@ enum OS_MutexState_ENUM {
 
 struct OS_Mutex_STRUCT {
 	OS_MutexState_E state;
+	OS_TCB_S *owner;
 };
 
 
