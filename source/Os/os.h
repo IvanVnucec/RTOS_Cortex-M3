@@ -9,6 +9,7 @@
 
 #include "os_forward.h"
 #include "mutex_forward.h"
+#include "os_errors.h"
 
 
 /*******************************************************************************************************
@@ -60,10 +61,12 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
                 uint32_t taskPriority, 
                 uint8_t *taskName,
                 uint32_t *taskStack, 
-                uint32_t taskStackSize);
+                uint32_t taskStackSize,
+				OS_Error_E *err);
+
 void OS_Schedule(void);
-void OS_Init(void);
-void OS_Start(void);
+void OS_Init(OS_Error_E *err);
+void OS_Start(OS_Error_E *err);
 uint32_t OS_getOSTickCounter(void);
 void OS_delayTicks(uint32_t ticks);
 void OS_delayTime(uint32_t days,

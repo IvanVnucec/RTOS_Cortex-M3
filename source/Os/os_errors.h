@@ -1,16 +1,10 @@
-#ifndef MUTEX_H
-#define MUTEX_H
+#ifndef OS_ERRORS_H
+#define OS_ERRORS_H
 
 
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
-#include <stdint.h>
-
-#include "os_forward.h"
-#include "mutex_forward.h"
-#include "os_errors.h"
-
 
 /*******************************************************************************************************
  *                         CONSTANTS
@@ -19,30 +13,27 @@
 /*******************************************************************************************************
  *                         DATA STRUCTURES
  ******************************************************************************************************/
-enum OS_MutexState_ENUM {
-	OS_MUTEX_STATE_FREE,
-	OS_MUTEX_STATE_OWNED
-};
-
-
-struct OS_Mutex_STRUCT {
-	OS_MutexState_E state;
-	OS_TCB_S *owner;
+enum OS_ERROR_ENUM {
+	OS_ERROR_NONE,
+	OS_ERROR_OS_NOT_INITIALIZED,
+	OS_ERROR_OS_NOT_STARTED,
+	OS_ERROR_TASK_NOT_CREATED
 };
 
 
 /*******************************************************************************************************
  *                         GLOBAL AND STATIC VARIABLES
  ******************************************************************************************************/
-extern OS_TCB_S *OS_TCBCurrent;
-
 
 /*******************************************************************************************************
  *                         PUBLIC FUNCTION PROTOTYPES
  ******************************************************************************************************/
-void OS_MutexInit(OS_Mutex_S *mutex);
-void OS_MutexPend(OS_Mutex_S *mutex, OS_Error_E *err);
-void OS_MutexPost(OS_Mutex_S *mutex, OS_Error_E *err);
 
 
-#endif /* #ifndef MUTEX_H */
+#endif /* #ifndef OS_ERRORS_H */
+
+
+/*******************************************************************************************************
+ *                         TYPEDEFS
+ ******************************************************************************************************/
+typedef enum OS_ERROR_ENUM OS_Error_E;

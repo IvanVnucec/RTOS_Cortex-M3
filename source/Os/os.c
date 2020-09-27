@@ -13,8 +13,6 @@
 
 #define SIZEOF_TASKIDLESTACK (256)
 
-
-
 #define OS_1MILISECOND_TO_TICKS	(OS_MS_TO_TICKS(1ul))
 #define OS_1SECOND_TO_TICKS		(1000ul * OS_1MILISECOND_TO_TICKS)
 #define OS_1MINUTE_TO_TICKS 	(60ul * OS_1SECOND_TO_TICKS)
@@ -62,7 +60,11 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
                 uint32_t taskPriority,
                 uint8_t *taskName,
                 uint32_t *taskStack, 
-                uint32_t taskStackSize) {
+                uint32_t taskStackSize,
+				OS_Error_E *err) {
+
+	OS_Error_E errLocal = OS_ERROR_NONE;
+
     OS_ENTER_CRITICAL();
 
     taskTCB->sp = taskStack + taskStackSize;
@@ -117,17 +119,24 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 
     taskTCB->taskState = OS_TASK_STATE_READY;
     taskTCB->taskPriority = taskPriority;
-    taskTCB->taskTick = (uint32_t)0;
+    taskTCB->taskTick = 0ul;
     taskTCB->taskName = taskName;
 
-    OS_TCBList[OS_TCBItemsInList] = taskTCB;
-    OS_TCBItemsInList++;
+    /* if there is no room in OS_TCBList */
+    if (OS_TCBItemsInList >= 64ul) {
+        errLocal = OS_ERROR_TASK_NOT_CREATED;
+    }
 
-    if (OS_TCBItemsInList > 64) {
-        OS_TCBItemsInList = 0;
+    if (errLocal == OS_ERROR_NONE) {
+    	OS_TCBList[OS_TCBItemsInList] = taskTCB;
+    	OS_TCBItemsInList++;
     }
 
     OS_EXIT_CRITICAL();
+
+    if (err != NULL) {
+    	*err = errLocal;
+    }
 }
 
 
@@ -189,27 +198,41 @@ void OS_Schedule(void) {
 }
 
 
-void OS_Init(void) {
-    OS_TCBItemsInList = 0;
-    OS_TCBCurrentIndex = 0;
-    OS_TCBNextIndex = 0;
+void OS_Init(OS_Error_E *err) {
+	OS_Error_E errLocal = OS_ERROR_NONE;
+
+    OS_TCBItemsInList = 0ul;
+    OS_TCBCurrentIndex = 0ul;
+    OS_TCBNextIndex = 0ul;
 
     OS_TaskCreate(&taskIdleTCB, 
               &OS_TaskIdle, 
               63ul,
               (uint8_t *)"taskIdle",
               taskIdleStack, 
-              SIZEOF_TASKIDLESTACK);
+              SIZEOF_TASKIDLESTACK,
+			  &errLocal);
 
-    OS_TCBCurrent = (OS_TCB_S *)0;
-    OS_TCBNext = OS_TCBList[0];
-    OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
+    if (errLocal == OS_ERROR_NONE) {
+    	OS_TCBCurrent = (OS_TCB_S *)0;
+    	OS_TCBNext = OS_TCBList[0];
+    	OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
+    }
+
+    if (err != NULL) {
+    	*err = errLocal;
+    }
 }
 
 
-void OS_Start(void) {
+void OS_Start(OS_Error_E *err) {
+	OS_Error_E errLocal = OS_ERROR_NONE;
 
     OS_TriggerContextSwitch();
+
+    if (err != NULL) {
+    	*err = errLocal;
+    }
 }
 
 
@@ -219,7 +242,6 @@ uint32_t OS_getOSTickCounter(void) {
 
 
 void OS_delayTicks(uint32_t ticks) {
-
     OS_ENTER_CRITICAL();
     
     OS_TCBCurrent->taskTick = ticks;
@@ -228,7 +250,6 @@ void OS_delayTicks(uint32_t ticks) {
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
-   
 }
 
 

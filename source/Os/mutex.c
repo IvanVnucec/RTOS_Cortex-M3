@@ -37,7 +37,9 @@ void OS_MutexInit(OS_Mutex_S *mutex) {
 }
 
 
-void OS_MutexPend(OS_Mutex_S *mutex) {
+void OS_MutexPend(OS_Mutex_S *mutex, OS_Error_E *err) {
+	OS_Error_E errLocal = OS_ERROR_NONE;
+
 	OS_ENTER_CRITICAL();
 
 	OS_TCBCurrent->mutex = mutex;
@@ -57,12 +59,18 @@ void OS_MutexPend(OS_Mutex_S *mutex) {
 		OS_Schedule();
 
 		/* After a mutex is free again we need to pend it */
-		OS_MutexPend(mutex);
+		OS_MutexPend(mutex, &errLocal);
+	}
+
+	if (err != NULL) {
+		*err = errLocal;
 	}
 }
 
 
-void OS_MutexPost(OS_Mutex_S *mutex) {
+void OS_MutexPost(OS_Mutex_S *mutex, OS_Error_E *err) {
+	OS_Error_E errLocal = OS_ERROR_NONE;
+
 	OS_ENTER_CRITICAL();
 
 	/* only the owner of mutex can post it */
@@ -75,6 +83,10 @@ void OS_MutexPost(OS_Mutex_S *mutex) {
 	}
 
 	OS_EXIT_CRITICAL();
+
+	if (err != NULL) {
+		*err = errLocal;
+	}
 }
 
 
