@@ -84,13 +84,13 @@ static void task1(void) {
 	uint32_t t1 = 0ul;
 
 	while(1) {
-		trace_puts("Task1");
 		t1++;
 
 		OS_MutexPend(&mutex1);
-		cnt++;
-		OS_delayTicks(10ul);
+		trace_printf("%d\n", cnt);
 		OS_MutexPost(&mutex1);
+
+		OS_delayTicks(1ul);
 	}
 }
 
@@ -99,12 +99,13 @@ static void task2(void) {
 	uint32_t t2 = 0ul;
 
 	while(2) {
-		trace_puts("Task2");
 		t2++;
 
 		OS_MutexPend(&mutex1);
 		cnt++;
+		OS_delayTicks(1000ul);
 		OS_MutexPost(&mutex1);
+
 	}
 }
 
