@@ -46,6 +46,7 @@ struct OS_TCB_STRUCT {
     OS_TaskState_E taskState;
     uint32_t taskPriority;
     uint32_t taskTick;
+    uint32_t lockedByTick;
     uint8_t *taskName;
     OS_Mutex_S *mutex;
 };

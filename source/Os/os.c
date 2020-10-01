@@ -120,6 +120,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     taskTCB->taskState = OS_TASK_STATE_READY;
     taskTCB->taskPriority = taskPriority;
     taskTCB->taskTick = 0ul;
+    taskTCB->lockedByTick = FALSE;
     taskTCB->taskName = taskName;
 
     /* if there is no room in OS_TCBList */
@@ -158,9 +159,14 @@ void OS_Schedule(void) {
     	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
     		flagLocked = FALSE;
 
+
     		/* If locked by OS_tick */
-    		if (OS_TCBList[i]->taskTick != 0ul) {
-    			flagLocked |= TRUE;
+    		if (OS_TCBList[i]->lockedByTick == TRUE) {
+    			if (OS_getOSTickCounter() == OS_TCBList[i]->taskTick) {
+    				OS_TCBList[i]->lockedByTick = FALSE;
+    			} else {
+    				flagLocked |= TRUE;
+    			}
     		}
 
     		/* If locked by Mutex (excluding owner of the mutex) */
@@ -244,7 +250,8 @@ uint32_t OS_getOSTickCounter(void) {
 void OS_delayTicks(uint32_t ticks) {
     OS_ENTER_CRITICAL();
     
-    OS_TCBCurrent->taskTick = ticks;
+    OS_TCBCurrent->taskTick = OS_getOSTickCounter() + ticks;
+    OS_TCBCurrent->lockedByTick = TRUE;
     OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
 
     OS_EXIT_CRITICAL();
@@ -268,17 +275,9 @@ void OS_delayTime(uint32_t days,
 
 
 void SysTick_Handler(void) {
-	uint32_t i;
-
 	OS_ENTER_CRITICAL();
 
     OS_tickCounter++;
-
-    for (i = 0ul; i < OS_TCBItemsInList; i++) {
-		if (OS_TCBList[i]->taskTick > 0ul) {
-			OS_TCBList[i]->taskTick--;
-		}
-    }
 
     OS_EXIT_CRITICAL();
 
