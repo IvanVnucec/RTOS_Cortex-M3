@@ -76,7 +76,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     *taskTCB->sp = (uint32_t)taskPointer;
 
     taskTCB->sp--;
-    *taskTCB->sp = 0x00000004;
+    *taskTCB->sp = (uint32_t)&OS_TaskTerminate;
 
     taskTCB->sp--;
     *taskTCB->sp = 0x00000012;
@@ -271,6 +271,17 @@ void OS_delayTime(uint32_t days,
 			minutes * OS_1MINUTE_TO_TICKS +
 			seconds * OS_1SECOND_TO_TICKS +
 			miliseconds * OS_1MILISECOND_TO_TICKS);
+}
+
+
+void OS_TaskTerminate(void) {
+	OS_ENTER_CRITICAL();
+
+	OS_TCBCurrent->taskState = OS_TASK_STATE_DORMANT;
+
+	OS_EXIT_CRITICAL();
+
+	OS_Schedule();
 }
 
 
