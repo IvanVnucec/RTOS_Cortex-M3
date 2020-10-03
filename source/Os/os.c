@@ -174,7 +174,13 @@ void OS_Schedule(void) {
 				if (OS_TCBList[i]->mutex->state == OS_MUTEX_STATE_OWNED) {
 					if (OS_TCBList[i]->mutex->owner != NULL) {
 						if (OS_TCBList[i]->mutex->owner != OS_TCBList[i]) {
-							flagLocked |= TRUE;
+			    			if (OS_getOSTickCounter() == OS_TCBList[i]->mutexTimeout) {
+			    				/* if the mutex timeout has expired, run the thread */
+			    				taskMaxPriorityIndex = i;
+			    				break;
+			    			} else {
+			    				flagLocked |= TRUE;
+			    			}
 						}
 					}
 				}

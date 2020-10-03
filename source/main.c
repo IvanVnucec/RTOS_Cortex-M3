@@ -67,7 +67,7 @@ int main(void) {
 			256ul,
 			NULL);
 
-	OS_MutexInit(&mutex1);
+	OS_MutexInit(&mutex1, NULL);
 
 	OS_Start(NULL);
 
@@ -84,30 +84,42 @@ int main(void) {
  ******************************************************************************************************/
 static void task1(void) {
 	uint32_t t1 = 0ul;
+	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	while(1) {
 		t1++;
 
-		OS_MutexPend(&mutex1, NULL);
-		trace_printf("%d\n", cnt);
-		OS_MutexPost(&mutex1, NULL);
+		OS_MutexPend(&mutex1, 5, &errLocal);
+		if (errLocal == OS_MUTEX_ERROR_NONE) {
 
-		OS_delayTicks(1ul);
+			trace_printf("%d\n", cnt);
+			OS_MutexPost(&mutex1, NULL);
+			OS_delayTicks(1ul);
+
+		} else {
+			trace_puts("mutex timeout task1");
+		}
 	}
 }
 
 
 static void task2(void) {
 	uint32_t t2 = 0ul;
+	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	while(2) {
 		t2++;
 
-		OS_MutexPend(&mutex1, NULL);
-		cnt++;
-		OS_delayTicks(1000ul);
-		OS_MutexPost(&mutex1, NULL);
+		OS_MutexPend(&mutex1, 5, &errLocal);
+		if (errLocal == OS_MUTEX_ERROR_NONE) {
 
+			cnt++;
+			OS_delayTicks(20);
+			OS_MutexPost(&mutex1, NULL);
+
+		} else {
+			trace_puts("mutex timeout task2");
+		}
 	}
 }
 
