@@ -9,7 +9,6 @@
 
 #include "os_forward.h"
 #include "mutex_forward.h"
-#include "os_errors.h"
 
 
 /*******************************************************************************************************
@@ -24,10 +23,7 @@
 #define OS_EXIT_CRITICAL()  ({asm ("CPSIE I");})
 
 #define OS_SCHED_FREQ_HZ	(1000ul)
-#define OS_MS_TO_TICKS(ms)	((ms) * OS_SCHED_FREQ_HZ / 1000ul)
-
-#define OS_TCB_LIST_LENGTH	(64ul)
-#define OS_IDLE_TASK_PRIORITY 	(OS_TCB_LIST_LENGTH - 1ul)
+#define OS_MS_TO_TICKS(ms)	(ms * OS_SCHED_FREQ_HZ / 1000ul)
 
 
 /*******************************************************************************************************
@@ -46,10 +42,8 @@ struct OS_TCB_STRUCT {
     OS_TaskState_E taskState;
     uint32_t taskPriority;
     uint32_t taskTick;
-    uint32_t lockedByTick;
     uint8_t *taskName;
     OS_Mutex_S *mutex;
-    uint32_t mutexTimeout;
 };
 
 
@@ -66,12 +60,10 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
                 uint32_t taskPriority, 
                 uint8_t *taskName,
                 uint32_t *taskStack, 
-                uint32_t taskStackSize,
-				OS_Error_E *err);
-
+                uint32_t taskStackSize);
 void OS_Schedule(void);
-void OS_Init(OS_Error_E *err);
-void OS_Start(OS_Error_E *err);
+void OS_Init(void);
+void OS_Start(void);
 uint32_t OS_getOSTickCounter(void);
 void OS_delayTicks(uint32_t ticks);
 void OS_delayTime(uint32_t days,
@@ -79,7 +71,6 @@ void OS_delayTime(uint32_t days,
 		uint32_t minutes,
 		uint32_t seconds,
 		uint32_t miliseconds);
-void OS_TaskTerminate(void);
 
 void PendSV_Handler(void);
 void SysTick_Handler(void);

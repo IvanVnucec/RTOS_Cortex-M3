@@ -13,7 +13,6 @@
  ******************************************************************************************************/
 typedef enum OS_MutexState_ENUM OS_MutexState_E;
 typedef struct OS_Mutex_STRUCT OS_Mutex_S;
-typedef enum OS_MutexError_STRUCT OS_MutexError_E;
 
 
 /*******************************************************************************************************
