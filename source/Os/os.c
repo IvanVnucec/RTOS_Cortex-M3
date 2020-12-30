@@ -162,7 +162,7 @@ void OS_Schedule(void) {
 
     		/* If locked by OS_tick */
     		if (OS_TCBList[i]->lockedByTick == TRUE) {
-    			if (OS_getOSTickCounter() == OS_TCBList[i]->taskTick) {
+    			if (OS_TCBList[i]->taskTick == 0ul) {
     				OS_TCBList[i]->lockedByTick = FALSE;
     			} else {
     				flagLocked |= TRUE;
@@ -256,7 +256,7 @@ uint32_t OS_getOSTickCounter(void) {
 void OS_delayTicks(uint32_t ticks) {
     OS_ENTER_CRITICAL();
     
-    OS_TCBCurrent->taskTick = OS_getOSTickCounter() + ticks;
+    OS_TCBCurrent->taskTick = ticks;
     OS_TCBCurrent->lockedByTick = TRUE;
     OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
 
@@ -292,9 +292,19 @@ void OS_TaskTerminate(void) {
 
 
 void SysTick_Handler(void) {
+	uint32_t i;
+
 	OS_ENTER_CRITICAL();
 
     OS_tickCounter++;
+
+    for(i = 0ul; i < OS_TCBItemsInList; i++) {
+    	if (OS_TCBList[i] != NULL) {
+        	if (OS_TCBList[i]->taskTick > 0ul) {
+        		OS_TCBList[i]->taskTick--;
+        	}
+    	}
+    }
 
     OS_EXIT_CRITICAL();
 
