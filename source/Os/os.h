@@ -24,7 +24,7 @@
 #define OS_EXIT_CRITICAL()  ({asm ("CPSIE I");})
 
 #define OS_SCHED_FREQ_HZ	(1000ul)
-#define OS_MS_TO_TICKS(ms)	(ms * OS_SCHED_FREQ_HZ / 1000ul)
+#define OS_MS_TO_TICKS(ms)	((ms) * OS_SCHED_FREQ_HZ / 1000ul)
 
 #define OS_TCB_LIST_LENGTH	(64ul)
 #define OS_IDLE_TASK_PRIORITY 	(OS_TCB_LIST_LENGTH - 1ul)
