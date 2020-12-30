@@ -13,6 +13,8 @@
 
 #define SIZEOF_TASKIDLESTACK (256)
 
+
+
 #define OS_1MILISECOND_TO_TICKS	(OS_MS_TO_TICKS(1ul))
 #define OS_1SECOND_TO_TICKS		(1000ul * OS_1MILISECOND_TO_TICKS)
 #define OS_1MINUTE_TO_TICKS 	(60ul * OS_1SECOND_TO_TICKS)
@@ -29,7 +31,7 @@
  ******************************************************************************************************/
 uint32_t OS_tickCounter;
 
-OS_TCB_S *OS_TCBList[OS_TCB_LIST_LENGTH];
+OS_TCB_S *OS_TCBList[64];
 uint32_t OS_TCBItemsInList;
 uint32_t OS_TCBCurrentIndex;
 uint32_t OS_TCBNextIndex;
@@ -60,11 +62,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
                 uint32_t taskPriority,
                 uint8_t *taskName,
                 uint32_t *taskStack, 
-                uint32_t taskStackSize,
-				OS_Error_E *err) {
-
-	OS_Error_E errLocal = OS_ERROR_NONE;
-
+                uint32_t taskStackSize) {
     OS_ENTER_CRITICAL();
 
     taskTCB->sp = taskStack + taskStackSize;
@@ -76,7 +74,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     *taskTCB->sp = (uint32_t)taskPointer;
 
     taskTCB->sp--;
-    *taskTCB->sp = (uint32_t)&OS_TaskTerminate;
+    *taskTCB->sp = 0x00000004;
 
     taskTCB->sp--;
     *taskTCB->sp = 0x00000012;
@@ -119,25 +117,17 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 
     taskTCB->taskState = OS_TASK_STATE_READY;
     taskTCB->taskPriority = taskPriority;
-    taskTCB->taskTick = 0ul;
-    taskTCB->lockedByTick = FALSE;
+    taskTCB->taskTick = (uint32_t)0;
     taskTCB->taskName = taskName;
 
-    /* if there is no room in OS_TCBList */
-    if (OS_TCBItemsInList >= OS_TCB_LIST_LENGTH) {
-        errLocal = OS_ERROR_TASK_NOT_CREATED;
-    }
+    OS_TCBList[OS_TCBItemsInList] = taskTCB;
+    OS_TCBItemsInList++;
 
-    if (errLocal == OS_ERROR_NONE) {
-    	OS_TCBList[OS_TCBItemsInList] = taskTCB;
-    	OS_TCBItemsInList++;
+    if (OS_TCBItemsInList > 64) {
+        OS_TCBItemsInList = 0;
     }
 
     OS_EXIT_CRITICAL();
-
-    if (err != NULL) {
-    	*err = errLocal;
-    }
 }
 
 
@@ -159,14 +149,9 @@ void OS_Schedule(void) {
     	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
     		flagLocked = FALSE;
 
-
     		/* If locked by OS_tick */
-    		if (OS_TCBList[i]->lockedByTick == TRUE) {
-    			if (OS_TCBList[i]->taskTick == 0ul) {
-    				OS_TCBList[i]->lockedByTick = FALSE;
-    			} else {
-    				flagLocked |= TRUE;
-    			}
+    		if (OS_TCBList[i]->taskTick != 0ul) {
+    			flagLocked |= TRUE;
     		}
 
     		/* If locked by Mutex (excluding owner of the mutex) */
@@ -174,13 +159,7 @@ void OS_Schedule(void) {
 				if (OS_TCBList[i]->mutex->state == OS_MUTEX_STATE_OWNED) {
 					if (OS_TCBList[i]->mutex->owner != NULL) {
 						if (OS_TCBList[i]->mutex->owner != OS_TCBList[i]) {
-			    			if (OS_getOSTickCounter() == OS_TCBList[i]->mutexTimeout) {
-			    				/* if the mutex timeout has expired, run the thread */
-			    				taskMaxPriorityIndex = i;
-			    				break;
-			    			} else {
-			    				flagLocked |= TRUE;
-			    			}
+							flagLocked |= TRUE;
 						}
 					}
 				}
@@ -210,41 +189,27 @@ void OS_Schedule(void) {
 }
 
 
-void OS_Init(OS_Error_E *err) {
-	OS_Error_E errLocal = OS_ERROR_NONE;
-
-    OS_TCBItemsInList = 0ul;
-    OS_TCBCurrentIndex = 0ul;
-    OS_TCBNextIndex = 0ul;
+void OS_Init(void) {
+    OS_TCBItemsInList = 0;
+    OS_TCBCurrentIndex = 0;
+    OS_TCBNextIndex = 0;
 
     OS_TaskCreate(&taskIdleTCB, 
               &OS_TaskIdle, 
-			  OS_IDLE_TASK_PRIORITY,
+              63ul,
               (uint8_t *)"taskIdle",
               taskIdleStack, 
-              SIZEOF_TASKIDLESTACK,
-			  &errLocal);
+              SIZEOF_TASKIDLESTACK);
 
-    if (errLocal == OS_ERROR_NONE) {
-    	OS_TCBCurrent = (OS_TCB_S *)0;
-    	OS_TCBNext = OS_TCBList[0];
-    	OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
-    }
-
-    if (err != NULL) {
-    	*err = errLocal;
-    }
+    OS_TCBCurrent = (OS_TCB_S *)0;
+    OS_TCBNext = OS_TCBList[0];
+    OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
 }
 
 
-void OS_Start(OS_Error_E *err) {
-	OS_Error_E errLocal = OS_ERROR_NONE;
+void OS_Start(void) {
 
     OS_TriggerContextSwitch();
-
-    if (err != NULL) {
-    	*err = errLocal;
-    }
 }
 
 
@@ -254,15 +219,16 @@ uint32_t OS_getOSTickCounter(void) {
 
 
 void OS_delayTicks(uint32_t ticks) {
+
     OS_ENTER_CRITICAL();
     
     OS_TCBCurrent->taskTick = ticks;
-    OS_TCBCurrent->lockedByTick = TRUE;
     OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
 
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
+   
 }
 
 
@@ -280,17 +246,6 @@ void OS_delayTime(uint32_t days,
 }
 
 
-void OS_TaskTerminate(void) {
-	OS_ENTER_CRITICAL();
-
-	OS_TCBCurrent->taskState = OS_TASK_STATE_DORMANT;
-
-	OS_EXIT_CRITICAL();
-
-	OS_Schedule();
-}
-
-
 void SysTick_Handler(void) {
 	uint32_t i;
 
@@ -298,12 +253,10 @@ void SysTick_Handler(void) {
 
     OS_tickCounter++;
 
-    for(i = 0ul; i < OS_TCBItemsInList; i++) {
-    	if (OS_TCBList[i] != NULL) {
-        	if (OS_TCBList[i]->taskTick > 0ul) {
-        		OS_TCBList[i]->taskTick--;
-        	}
-    	}
+    for (i = 0ul; i < OS_TCBItemsInList; i++) {
+		if (OS_TCBList[i]->taskTick > 0ul) {
+			OS_TCBList[i]->taskTick--;
+		}
     }
 
     OS_EXIT_CRITICAL();
