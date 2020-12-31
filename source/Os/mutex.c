@@ -23,6 +23,10 @@
 /*******************************************************************************************************
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
+void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, uint32_t timeout, uint32_t* error);
+void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, uint32_t* error);
+void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, uint32_t* error);
+
 
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
@@ -35,6 +39,7 @@ void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 	if (mutex != NULL) {
 		mutex->state = OS_MUTEX_STATE_FREE;
 		mutex->owner = NULL;
+		mutex->num_of_pending_tasks = 0ul;
 
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
@@ -51,9 +56,11 @@ void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
-	if (mutex != NULL) {
-		OS_ENTER_CRITICAL();
+	/* TODO: This function needs cleaning IvanVnucec */
 
+	OS_ENTER_CRITICAL();
+
+	if (mutex != NULL) {
 		OS_TCBCurrent->mutex = mutex;
 
 		if (mutex->state == OS_MUTEX_STATE_FREE) {
@@ -64,27 +71,51 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 
 		} else {
 			/* put current task to pending for mutex */
-			OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
-			OS_TCBCurrent->mutexTimeout = OS_getOSTickCounter() + timeout;
-			OS_EXIT_CRITICAL();
+			MutexTCBPendingListAdd(mutex, OS_TCBCurrent, timeout, NULL);
 
 			/* call scheduler */
-			OS_Schedule();
+			if (timeout != 0u) {
+				OS_EXIT_CRITICAL();
+				OS_delayTicks(timeout);
+				OS_ENTER_CRITICAL();
+			}
 
-			OS_ENTER_CRITICAL();
-
-			if (OS_TCBCurrent->mutex->state == OS_MUTEX_STATE_FREE) {
+			/* we continue here if mutex was freed and the mutex timeout had expired */
+			if (OS_TCBCurrent->mutex->state == OS_MUTEX_STATE_FREE && OS_TCBCurrent->taskTick > 0u) {
 				/* After a mutex is free again we need to pend it */
 				OS_EXIT_CRITICAL();
 				/* we can put 0 for timeout because mutex is free here */
 				OS_MutexPend(mutex, 0ul, &errLocal);
 
 			} else {
-				OS_EXIT_CRITICAL();
-				errLocal = OS_MUTEX_ERROR_TIMEOUT;
+				/* wait indefinitely mode */
+				if (timeout == 0ul) {
+					while (OS_TCBCurrent->mutex->state == OS_MUTEX_STATE_OWNED) {
+						OS_EXIT_CRITICAL();
+						OS_Schedule();
+						OS_ENTER_CRITICAL();
+					}
+
+					OS_EXIT_CRITICAL();
+
+					/* we can put 0 for timeout because mutex is free here */
+					OS_MutexPend(mutex, 0ul, &errLocal);
+
+				} else {
+					if (OS_TCBCurrent->taskTick > 0u) {
+						OS_EXIT_CRITICAL();
+
+						OS_MutexPend(mutex, OS_TCBCurrent->taskTick, &errLocal);
+					} else {
+						/* remove tcb from mutex tcb pending list because the tcb is
+						 * now running (after timeout occured) */
+						MutexTCBPendingListRemove(mutex, OS_TCBCurrent, NULL);
+						OS_EXIT_CRITICAL();
+						errLocal = OS_MUTEX_ERROR_TIMEOUT;
+					}
+				}
 			}
 		}
-
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
 	}
@@ -101,11 +132,13 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 	if (mutex != NULL) {
 		OS_ENTER_CRITICAL();
 
-		/* only the owner of mutex can post it */
+		/* TODO: mutex->owner can be NULL if you call MutexPost IvanVnucec*/
+		/* only the owner of mutex can post mutex */
 		if (mutex->owner == OS_TCBCurrent) {
 			mutex->state = OS_MUTEX_STATE_FREE;
-			mutex->owner->mutex = NULL;
 			mutex->owner = NULL;
+			MutexTCBPendingListRemoveAll(mutex, NULL);
+
 			OS_EXIT_CRITICAL();
 
 			OS_Schedule();
@@ -128,3 +161,67 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
 
+/* TODO: This functions below should be implemented with lists and not with arrays IvanVnucec*/
+void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, uint32_t timeout, uint32_t* error) {
+	uint32_t err = 0ul;
+
+	tcb->taskState = OS_TASK_STATE_PENDING;
+	//tcb->taskTick = timeout;
+	mutex->pending_tasks[mutex->num_of_pending_tasks] = tcb;
+	mutex->num_of_pending_tasks++;
+
+	if (error != NULL) {
+		*error = err;
+	}
+}
+
+
+void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, uint32_t* error) {
+	uint32_t err = 0ul;
+	uint32_t i;
+
+	if (mutex->num_of_pending_tasks > 0u) {
+		/* assumption: we always have variable tcb in mutex->pending_tasks[] array */
+		/* find tcb to be removed */
+		i = 0ul;
+		while (mutex->pending_tasks[i] != tcb) {
+			i++;
+		}
+
+		/* we dont need to set it to ready state
+		 * because it is already in running state */
+		/* mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY; */
+
+		/* assumption: only one tcb needs to be removed */
+		/* shift every tcb in list to one place to the left */
+		while(i < mutex->num_of_pending_tasks-1) {
+			mutex->pending_tasks[i] = mutex->pending_tasks[i+1];
+			i++;
+		}
+
+		mutex->num_of_pending_tasks--;
+	} else {
+		err = 1;
+	}
+
+
+	if (error != NULL) {
+		*error = err;
+	}
+}
+
+
+void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, uint32_t* error) {
+	uint32_t err = 0ul;
+	uint32_t i;
+
+	for (i = 0; i < mutex->num_of_pending_tasks; i++) {
+		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+	}
+
+	mutex->num_of_pending_tasks = 0ul;
+
+	if (error != NULL) {
+		*error = err;
+	}
+}

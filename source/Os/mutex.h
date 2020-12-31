@@ -15,6 +15,8 @@
 /*******************************************************************************************************
  *                         CONSTANTS
  ******************************************************************************************************/
+#define OS_MUTEX_PENDING_TASKS_ARRAY_SIZE 64u /* this should be equal to OS_TCB_LIST_LENGTH */
+
 
 /*******************************************************************************************************
  *                         DATA STRUCTURES
@@ -28,6 +30,8 @@ enum OS_MutexState_ENUM {
 struct OS_Mutex_STRUCT {
 	OS_MutexState_E state;
 	OS_TCB_S *owner;
+	OS_TCB_S *pending_tasks[64];
+	uint32_t num_of_pending_tasks;
 };
 
 
