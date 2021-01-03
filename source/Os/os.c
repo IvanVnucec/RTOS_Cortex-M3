@@ -155,10 +155,6 @@ void OS_Schedule(void) {
     }
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
-		if (OS_TCBList[i]->taskTick == 0ul && OS_TCBList[i]->lockedByTick == TRUE) {
-			OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
-		}
-
         /* choose a thread to run next based on threads priority*/
         if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
             OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
@@ -206,6 +202,10 @@ void OS_Init(OS_Error_E *err) {
 
 void OS_Start(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
+
+	/* TODO: OS_Start should call the task with the highest priority and
+	 * not Idle task. IvanVnucec
+	 */
 
     OS_TriggerContextSwitch();
 
@@ -265,6 +265,11 @@ void OS_TaskTerminate(void) {
 
 
 void SysTick_Handler(void) {
+
+	/* TODO: This code which is dealing with OS stuff needs to
+	 * have its code in separate function because SysTick_Handler
+	 * function is provided by host/user. IvanVnucec
+	 */
 	uint32_t i;
 
 	OS_ENTER_CRITICAL();
@@ -272,11 +277,13 @@ void SysTick_Handler(void) {
     OS_tickCounter++;
 
     for(i = 0ul; i < OS_TCBItemsInList; i++) {
-    	if (OS_TCBList[i] != NULL) {
-        	if (OS_TCBList[i]->taskTick > 0ul) {
-        		OS_TCBList[i]->taskTick--;
-        	}
-    	}
+		if (OS_TCBList[i]->taskTick > 0ul) {
+			OS_TCBList[i]->taskTick--;
+
+			if (OS_TCBList[i]->taskTick == 0u) {
+				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+			}
+		}
     }
 
     OS_EXIT_CRITICAL();
