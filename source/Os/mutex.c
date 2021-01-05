@@ -33,7 +33,7 @@ void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, OS_MutexError_E* error);
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
-void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
+void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *err) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	OS_ENTER_CRITICAL();
@@ -43,6 +43,8 @@ void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 		mutex->owner = NULL;
 		mutex->num_of_pending_tasks = 0ul;
 		mutex->isInitialized = TRUE;
+		mutex->prioInversion = prioInversion;
+		mutex->isPrioInversion = FALSE;
 
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
@@ -56,8 +58,9 @@ void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 }
 
 
-void OS_MutexPend(OS_Mutex_S *mutex, OS_MutexError_E *err) {
+void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+	uint32_t oldOwnerTaskPriority;
 
 	OS_ENTER_CRITICAL();
 
@@ -68,11 +71,21 @@ void OS_MutexPend(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 				mutex->state = OS_MUTEX_STATE_OWNED;
 
 			} else {
+				/* if current TCB has higher priority that mutex owner TCB */
+				if (OS_TCBCurrent->taskPriority < mutex->owner->taskPriority) {
+					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+					mutex->owner->taskPriority = mutex->prioInversion;
+					mutex->isPrioInversion = TRUE;
+				}
+
 				MutexTCBPendingListAdd(mutex, OS_TCBCurrent, &errLocal);
 
 				if (errLocal == OS_MUTEX_ERROR_NONE) {
+					OS_EXIT_CRITICAL();
 					OS_Schedule();
+					OS_ENTER_CRITICAL();
 
+					/* pend it */
 					mutex->owner = OS_TCBCurrent;
 					mutex->state = OS_MUTEX_STATE_OWNED;
 				}
@@ -100,11 +113,15 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 	if (mutex != NULL) {
 		OS_ENTER_CRITICAL();
 
-		/* TODO: mutex->owner can be NULL if you call MutexPost IvanVnucec*/
 		if (mutex->owner != NULL) {
 			/* only the owner of mutex can post mutex */
 			if (mutex->owner == OS_TCBCurrent) {
 				mutex->state = OS_MUTEX_STATE_FREE;
+				if (mutex->isPrioInversion == TRUE) {
+					mutex->isPrioInversion = FALSE;
+					mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
+				}
+
 				mutex->owner = NULL;
 				MutexTCBPendingListRemoveAll(mutex, NULL);
 

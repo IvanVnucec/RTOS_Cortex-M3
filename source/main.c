@@ -59,7 +59,7 @@ int main(void) {
 
 	OS_TaskCreate(&task1TCB,
 			task1,
-			0ul,
+			1ul,
 			(uint8_t *)"task1",
 			task1Stack,
 			256ul,
@@ -67,7 +67,7 @@ int main(void) {
 
 	OS_TaskCreate(&task2TCB,
 			task2,
-			1ul,
+			2ul,
 			(uint8_t *)"task2",
 			task2Stack,
 			256ul,
@@ -75,13 +75,13 @@ int main(void) {
 
 	OS_TaskCreate(&task3TCB,
 			task3,
-			2ul,
+			3ul,
 			(uint8_t *)"task3",
 			task3Stack,
 			256ul,
 			NULL);
 
-	OS_MutexInit(&mutex1, NULL);
+	OS_MutexInit(&mutex1, 0, NULL);
 
 	OS_Start(NULL);
 
@@ -100,10 +100,11 @@ static void task1(void) {
 	uint32_t t1 = 0ul;
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
+	OS_delayTicks(2);
 	while(1) {
 		t1++;
 
-		OS_MutexPend(&mutex1, &errLocal);
+		OS_MutexPend(&mutex1, 10, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
 
 			trace_printf("%d\n", cnt);
@@ -121,10 +122,11 @@ static void task2(void) {
 	uint32_t t2 = 0ul;
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
+	OS_delayTicks(2);
 	while(2) {
 		t2++;
 
-		OS_MutexPend(&mutex1, &errLocal);
+		OS_MutexPend(&mutex1, 10, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
 
 			cnt++;
@@ -145,8 +147,9 @@ static void task3(void) {
 	while(3) {
 		t3++;
 
-		OS_MutexPend(&mutex1, &errLocal);
+		OS_MutexPend(&mutex1, 10, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
+			while(OS_getOSTickCounter() != 4);
 			OS_MutexPost(&mutex1, NULL);
 
 		} else {
