@@ -104,7 +104,7 @@ static void task1(void) {
 	while(1) {
 		t1++;
 
-		OS_MutexPend(&mutex1, 10, &errLocal);
+		OS_MutexPend(&mutex1, 0, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
 
 			trace_printf("%d\n", cnt);
@@ -147,9 +147,9 @@ static void task3(void) {
 	while(3) {
 		t3++;
 
-		OS_MutexPend(&mutex1, 10, &errLocal);
+		OS_MutexPend(&mutex1, 0, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
-			while(OS_getOSTickCounter() != 4);
+			OS_delayTicks(20);
 			OS_MutexPost(&mutex1, NULL);
 
 		} else {

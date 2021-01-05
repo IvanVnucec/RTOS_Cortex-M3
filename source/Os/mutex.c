@@ -60,7 +60,6 @@ void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *er
 
 void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
-	uint32_t oldOwnerTaskPriority;
 
 	OS_ENTER_CRITICAL();
 
@@ -81,13 +80,29 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 				MutexTCBPendingListAdd(mutex, OS_TCBCurrent, &errLocal);
 
 				if (errLocal == OS_MUTEX_ERROR_NONE) {
-					OS_EXIT_CRITICAL();
-					OS_Schedule();
-					OS_ENTER_CRITICAL();
+					if (timeout > 0) {
+						OS_delayTicks(timeout);
 
-					/* pend it */
-					mutex->owner = OS_TCBCurrent;
-					mutex->state = OS_MUTEX_STATE_OWNED;
+						if (OS_TCBCurrent->taskTick > 0) {
+							/* pend it */
+							mutex->owner = OS_TCBCurrent;
+							mutex->state = OS_MUTEX_STATE_OWNED;
+
+						} else {
+							MutexTCBPendingListRemove(mutex, OS_TCBCurrent,
+									&errLocal);
+
+							if (errLocal == OS_MUTEX_ERROR_NONE) {
+								errLocal = OS_MUTEX_ERROR_TIMEOUT;
+							}
+						}
+
+					} else {
+						OS_Schedule();
+
+						mutex->owner = OS_TCBCurrent;
+						mutex->state = OS_MUTEX_STATE_OWNED;
+					}
 				}
 			}
 
@@ -123,13 +138,13 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 				}
 
 				mutex->owner = NULL;
-				MutexTCBPendingListRemoveAll(mutex, NULL);
+				MutexTCBPendingListRemoveAll(mutex, &errLocal);
 
-				OS_EXIT_CRITICAL();
-
-				OS_Schedule();
-
-				OS_ENTER_CRITICAL();
+				if (errLocal == OS_MUTEX_ERROR_NONE) {
+					OS_EXIT_CRITICAL();
+					OS_Schedule();
+					OS_ENTER_CRITICAL();
+				}
 
 			} else {
 				errLocal = OS_MUTEX_ERROR_NOT_OWNER_POST;
@@ -194,10 +209,9 @@ void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E
 
 		mutex->num_of_pending_tasks--;
 		tcb->taskState = OS_TASK_STATE_READY;
+		/* so OS_tick won't enable it again */
+		mutex->pending_tasks[i]->taskTick = 0;
 
-	} else {
-		/* TODO: Add meaningfull errors. IvanVnucec */
-		err = !OS_MUTEX_ERROR_NONE;
 	}
 
 	if (error != NULL) {
@@ -212,6 +226,8 @@ void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, OS_MutexError_E* error) {
 
 	for (i = 0; i < mutex->num_of_pending_tasks; i++) {
 		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+		/* so OS_tick won't enable it again */
+		mutex->pending_tasks[i]->taskTick = 0;
 	}
 
 	mutex->num_of_pending_tasks = 0ul;
