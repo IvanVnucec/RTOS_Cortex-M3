@@ -164,6 +164,7 @@ void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* e
 		mutex->num_of_pending_tasks++;
 
 	} else {
+		/* TODO: Add meaningfull errors. IvanVnucec */
 		err = !OS_MUTEX_ERROR_NONE;
 	}
 
@@ -195,6 +196,7 @@ void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E
 		tcb->taskState = OS_TASK_STATE_READY;
 
 	} else {
+		/* TODO: Add meaningfull errors. IvanVnucec */
 		err = !OS_MUTEX_ERROR_NONE;
 	}
 
