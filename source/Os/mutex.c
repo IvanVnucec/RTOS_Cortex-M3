@@ -98,7 +98,9 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 						}
 
 					} else {
+						OS_EXIT_CRITICAL();
 						OS_Schedule();
+						OS_ENTER_CRITICAL();
 
 						mutex->owner = OS_TCBCurrent;
 						mutex->state = OS_MUTEX_STATE_OWNED;
