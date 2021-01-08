@@ -1,8 +1,13 @@
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
+#include <stdint.h>
+
 #include "mutex.h"
 #include "mutex_forward.h"
+#include "os.h"
+#include "os_forward.h"
+
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
@@ -23,11 +28,15 @@
 /*******************************************************************************************************
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
+void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error);
+void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error);
+void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, OS_MutexError_E* error);
+
 
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
-void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
+void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *err) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	OS_ENTER_CRITICAL();
@@ -35,6 +44,10 @@ void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 	if (mutex != NULL) {
 		mutex->state = OS_MUTEX_STATE_FREE;
 		mutex->owner = NULL;
+		mutex->num_of_pending_tasks = 0ul;
+		mutex->isInitialized = TRUE;
+		mutex->prioInversion = prioInversion;
+		mutex->isPrioInversion = FALSE;
 
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
@@ -51,43 +64,62 @@ void OS_MutexInit(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
+	OS_ENTER_CRITICAL();
+
 	if (mutex != NULL) {
-		OS_ENTER_CRITICAL();
-
-		OS_TCBCurrent->mutex = mutex;
-
-		if (mutex->state == OS_MUTEX_STATE_FREE) {
-			mutex->state = OS_MUTEX_STATE_OWNED;
-			mutex->owner = OS_TCBCurrent;
-
-			OS_EXIT_CRITICAL();
-
-		} else {
-			/* put current task to pending for mutex */
-			OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
-			OS_TCBCurrent->mutexTimeout = OS_getOSTickCounter() + timeout;
-			OS_EXIT_CRITICAL();
-
-			/* call scheduler */
-			OS_Schedule();
-
-			OS_ENTER_CRITICAL();
-
-			if (OS_TCBCurrent->mutex->state == OS_MUTEX_STATE_FREE) {
-				/* After a mutex is free again we need to pend it */
-				OS_EXIT_CRITICAL();
-				/* we can put 0 for timeout because mutex is free here */
-				OS_MutexPend(mutex, 0ul, &errLocal);
+		if (mutex->isInitialized == TRUE) {
+			if (mutex->state == OS_MUTEX_STATE_FREE) {
+				mutex->owner = OS_TCBCurrent;
+				mutex->state = OS_MUTEX_STATE_OWNED;
 
 			} else {
-				OS_EXIT_CRITICAL();
-				errLocal = OS_MUTEX_ERROR_TIMEOUT;
+				/* if current TCB has higher priority that mutex owner TCB */
+				if (OS_TCBCurrent->taskPriority < mutex->owner->taskPriority) {
+					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+					mutex->owner->taskPriority = mutex->prioInversion;
+					mutex->isPrioInversion = TRUE;
+				}
+
+				MutexTCBPendingListAdd(mutex, OS_TCBCurrent, &errLocal);
+
+				if (errLocal == OS_MUTEX_ERROR_NONE) {
+					if (timeout > 0) {
+						OS_delayTicks(timeout);
+
+						if (OS_TCBCurrent->taskTick > 0) {
+							/* pend it */
+							mutex->owner = OS_TCBCurrent;
+							mutex->state = OS_MUTEX_STATE_OWNED;
+
+						} else {
+							MutexTCBPendingListRemove(mutex, OS_TCBCurrent,
+									&errLocal);
+
+							if (errLocal == OS_MUTEX_ERROR_NONE) {
+								errLocal = OS_MUTEX_ERROR_TIMEOUT;
+							}
+						}
+
+					} else {
+						OS_EXIT_CRITICAL();
+						OS_Schedule();
+						OS_ENTER_CRITICAL();
+
+						mutex->owner = OS_TCBCurrent;
+						mutex->state = OS_MUTEX_STATE_OWNED;
+					}
+				}
 			}
+
+		} else {
+			errLocal = OS_MUTEX_ERROR_NOT_INITIALIZED;
 		}
 
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
 	}
+
+	OS_EXIT_CRITICAL();
 
 	if (err != NULL) {
 		*err = errLocal;
@@ -101,22 +133,36 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 	if (mutex != NULL) {
 		OS_ENTER_CRITICAL();
 
-		/* only the owner of mutex can post it */
-		if (mutex->owner == OS_TCBCurrent) {
-			mutex->state = OS_MUTEX_STATE_FREE;
-			mutex->owner->mutex = NULL;
-			mutex->owner = NULL;
-			OS_EXIT_CRITICAL();
+		if (mutex->owner != NULL) {
+			/* only the owner of mutex can post mutex */
+			if (mutex->owner == OS_TCBCurrent) {
+				mutex->state = OS_MUTEX_STATE_FREE;
+				if (mutex->isPrioInversion == TRUE) {
+					mutex->isPrioInversion = FALSE;
+					mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
+				}
 
-			OS_Schedule();
+				mutex->owner = NULL;
+				MutexTCBPendingListRemoveAll(mutex, &errLocal);
 
+				if (errLocal == OS_MUTEX_ERROR_NONE) {
+					OS_EXIT_CRITICAL();
+					OS_Schedule();
+					OS_ENTER_CRITICAL();
+				}
+
+			} else {
+				errLocal = OS_MUTEX_ERROR_NOT_OWNER_POST;
+			}
 		} else {
-			errLocal = OS_MUTEX_ERROR_NOT_OWNER_POST;
+			errLocal = OS_MUTEX_ERROR_NULL_PTR;
 		}
 
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
 	}
+
+	OS_EXIT_CRITICAL();
 
 	if (err != NULL) {
 		*err = errLocal;
@@ -128,3 +174,70 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
 
+/* TODO: This functions below should be implemented with lists and not with arrays IvanVnucec*/
+void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error) {
+	OS_MutexError_E err = OS_MUTEX_ERROR_NONE;
+
+	if (mutex->num_of_pending_tasks < OS_MUTEX_PENDING_TASKS_ARRAY_SIZE) {
+		tcb->taskState = OS_TASK_STATE_PENDING;
+		mutex->pending_tasks[mutex->num_of_pending_tasks] = tcb;
+		mutex->num_of_pending_tasks++;
+
+	} else {
+		/* TODO: Add meaningfull errors. IvanVnucec */
+		err = !OS_MUTEX_ERROR_NONE;
+	}
+
+
+	if (error != NULL) {
+		*error = err;
+	}
+}
+
+
+void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error) {
+	OS_MutexError_E err = OS_MUTEX_ERROR_NONE;
+	uint32_t i;
+
+	if (mutex->num_of_pending_tasks > 0u) {
+		i = 0ul;
+		while (mutex->pending_tasks[i] != tcb && i < mutex->num_of_pending_tasks) {
+			i++;
+		}
+
+		/* assumption: only one tcb needs to be removed */
+		/* shift every tcb in list to one place to the left */
+		while(i < mutex->num_of_pending_tasks-1) {
+			mutex->pending_tasks[i] = mutex->pending_tasks[i+1];
+			i++;
+		}
+
+		mutex->num_of_pending_tasks--;
+		tcb->taskState = OS_TASK_STATE_READY;
+		/* so OS_tick won't enable it again */
+		mutex->pending_tasks[i]->taskTick = 0;
+
+	}
+
+	if (error != NULL) {
+		*error = err;
+	}
+}
+
+
+void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, OS_MutexError_E* error) {
+	OS_MutexError_E err = OS_MUTEX_ERROR_NONE;
+	uint32_t i;
+
+	for (i = 0; i < mutex->num_of_pending_tasks; i++) {
+		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+		/* so OS_tick won't enable it again */
+		mutex->pending_tasks[i]->taskTick = 0;
+	}
+
+	mutex->num_of_pending_tasks = 0ul;
+
+	if (error != NULL) {
+		*error = err;
+	}
+}

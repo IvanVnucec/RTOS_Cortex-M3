@@ -5,14 +5,6 @@
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "diag/Trace.h"
-#include "stm32f10x.h"
-
-#include "os.h"
-#include "mutex.h"
 
 /*******************************************************************************************************
  *                         CONSTANTS
@@ -35,5 +27,6 @@
 void SysTick_Handler(void);
 void PendSV_Handler(void);
 int main(void);
+
 
 #endif /* #ifndef MAIN_H */

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
-#include <stdint.h>
 #include "os.h"
+#include "os_errors.h"
 
 
 /*******************************************************************************************************
@@ -143,55 +143,18 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 
 void OS_Schedule(void) {
     uint32_t i;
-    uint32_t flagLocked;
     uint32_t taskMaxPriorityIndex;
 
     taskMaxPriorityIndex = 0ul;
 
 	OS_ENTER_CRITICAL();
 
-    /* If the current task was running then set it to ready state */
+    /* If the current task was still running then set it to ready state */
     if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
     	OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
     }
 
     for (i = 0ul; i < OS_TCBItemsInList; i++) {
-    	if (OS_TCBList[i]->taskState == OS_TASK_STATE_PENDING) {
-    		flagLocked = FALSE;
-
-
-    		/* If locked by OS_tick */
-    		if (OS_TCBList[i]->lockedByTick == TRUE) {
-    			if (OS_TCBList[i]->taskTick == 0ul) {
-    				OS_TCBList[i]->lockedByTick = FALSE;
-    			} else {
-    				flagLocked |= TRUE;
-    			}
-    		}
-
-    		/* If locked by Mutex (excluding owner of the mutex) */
-			if (OS_TCBList[i]->mutex != NULL) {
-				if (OS_TCBList[i]->mutex->state == OS_MUTEX_STATE_OWNED) {
-					if (OS_TCBList[i]->mutex->owner != NULL) {
-						if (OS_TCBList[i]->mutex->owner != OS_TCBList[i]) {
-			    			if (OS_getOSTickCounter() == OS_TCBList[i]->mutexTimeout) {
-			    				/* if the mutex timeout has expired, run the thread */
-			    				taskMaxPriorityIndex = i;
-			    				break;
-			    			} else {
-			    				flagLocked |= TRUE;
-			    			}
-						}
-					}
-				}
-			}
-
-			/* If not locked at all */
-			if (flagLocked == FALSE) {
-				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
-			}
-    	}
-
         /* choose a thread to run next based on threads priority*/
         if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
             OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
@@ -240,7 +203,7 @@ void OS_Init(OS_Error_E *err) {
 void OS_Start(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
 
-    OS_TriggerContextSwitch();
+    OS_Schedule();
 
     if (err != NULL) {
     	*err = errLocal;
@@ -263,6 +226,12 @@ void OS_delayTicks(uint32_t ticks) {
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
+
+    OS_ENTER_CRITICAL();
+
+    OS_TCBCurrent->lockedByTick = FALSE;
+
+    OS_EXIT_CRITICAL();
 }
 
 
@@ -291,7 +260,7 @@ void OS_TaskTerminate(void) {
 }
 
 
-void SysTick_Handler(void) {
+void OS_TickHandler(void) {
 	uint32_t i;
 
 	OS_ENTER_CRITICAL();
@@ -299,16 +268,23 @@ void SysTick_Handler(void) {
     OS_tickCounter++;
 
     for(i = 0ul; i < OS_TCBItemsInList; i++) {
-    	if (OS_TCBList[i] != NULL) {
-        	if (OS_TCBList[i]->taskTick > 0ul) {
-        		OS_TCBList[i]->taskTick--;
-        	}
-    	}
+      if (OS_TCBList[i]->taskTick > 0ul) {
+        OS_TCBList[i]->taskTick--;
+
+        if (OS_TCBList[i]->taskTick == 0u) {
+          OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+        }
+      }
     }
 
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
+}
+
+
+void SysTick_Handler(void) {
+	OS_TickHandler();
 }
 
 
