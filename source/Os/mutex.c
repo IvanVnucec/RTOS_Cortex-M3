@@ -5,6 +5,9 @@
 
 #include "mutex.h"
 #include "mutex_forward.h"
+#include "os.h"
+#include "os_forward.h"
+
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
