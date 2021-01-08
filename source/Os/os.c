@@ -203,11 +203,7 @@ void OS_Init(OS_Error_E *err) {
 void OS_Start(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
 
-	/* TODO: OS_Start should call the task with the highest priority and
-	 * not Idle task. IvanVnucec
-	 */
-
-    OS_TriggerContextSwitch();
+    OS_Schedule();
 
     if (err != NULL) {
     	*err = errLocal;
