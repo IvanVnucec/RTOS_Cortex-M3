@@ -1,5 +1,5 @@
 # Cortex-M3 RTOS
- - Cortex-M3 RTOS, preemptive, priority-based 
+ - Cortex-M3 RTOS, preemptive, priority-based, staticly linked
 
 ## Description
  - Scheduler is implemented in `os.c` file. Context switching is written in assembly language in `os_cpu.s` file. Simple example is written in `main.c` file.  

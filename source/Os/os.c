@@ -268,13 +268,13 @@ void OS_TickHandler(void) {
     OS_tickCounter++;
 
     for(i = 0ul; i < OS_TCBItemsInList; i++) {
-		if (OS_TCBList[i]->taskTick > 0ul) {
-			OS_TCBList[i]->taskTick--;
+      if (OS_TCBList[i]->taskTick > 0ul) {
+        OS_TCBList[i]->taskTick--;
 
-			if (OS_TCBList[i]->taskTick == 0u) {
-				OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
-			}
-		}
+        if (OS_TCBList[i]->taskTick == 0u) {
+          OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+        }
+      }
     }
 
     OS_EXIT_CRITICAL();
