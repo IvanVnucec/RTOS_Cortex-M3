@@ -264,12 +264,7 @@ void OS_TaskTerminate(void) {
 }
 
 
-void SysTick_Handler(void) {
-
-	/* TODO: This code which is dealing with OS stuff needs to
-	 * have its code in separate function because SysTick_Handler
-	 * function is provided by host/user. IvanVnucec
-	 */
+void OS_TickHandler(void) {
 	uint32_t i;
 
 	OS_ENTER_CRITICAL();
@@ -289,6 +284,11 @@ void SysTick_Handler(void) {
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
+}
+
+
+void SysTick_Handler(void) {
+	OS_TickHandler();
 }
 
 

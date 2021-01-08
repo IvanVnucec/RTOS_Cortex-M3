@@ -80,6 +80,7 @@ void OS_delayTime(uint32_t days,
 		uint32_t seconds,
 		uint32_t miliseconds);
 void OS_TaskTerminate(void);
+void OS_TickHandler(void);
 
 void PendSV_Handler(void);
 void SysTick_Handler(void);
