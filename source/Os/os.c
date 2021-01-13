@@ -40,6 +40,8 @@ OS_TCB_S *OS_TCBNext;
 OS_TCB_S taskIdleTCB;
 uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
 
+uint32_t OS_schedEnabled;
+
 
 /*******************************************************************************************************
  *                         GLOBAL VARIABLES DEFINITION
@@ -120,7 +122,6 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     taskTCB->taskState = OS_TASK_STATE_READY;
     taskTCB->taskPriority = taskPriority;
     taskTCB->taskTick = 0ul;
-    taskTCB->lockedByTick = FALSE;
     taskTCB->taskName = taskName;
 
     /* if there is no room in OS_TCBList */
@@ -134,6 +135,10 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     }
 
     OS_EXIT_CRITICAL();
+
+    if (errLocal == OS_ERROR_NONE) {
+    	OS_Schedule();
+    }
 
     if (err != NULL) {
     	*err = errLocal;
@@ -149,32 +154,39 @@ void OS_Schedule(void) {
 
 	OS_ENTER_CRITICAL();
 
-    /* If the current task was still running then set it to ready state */
-    if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
-    	OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
-    }
+	if (OS_schedEnabled == TRUE) {
+		/* If the current task was still running then set it to ready state */
+		if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
+			OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
+		}
 
-    for (i = 0ul; i < OS_TCBItemsInList; i++) {
-        /* choose a thread to run next based on threads priority*/
-        if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY && 
-            OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
-            taskMaxPriorityIndex = i;
-        }
-    }
-    
-    OS_TCBNextIndex = taskMaxPriorityIndex;
+		for (i = 0ul; i < OS_TCBItemsInList; i++) {
+			/* choose a thread to run next based on threads priority*/
+			if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY &&
+				OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
+				taskMaxPriorityIndex = i;
+			}
+		}
 
-    OS_TCBNext = OS_TCBList[OS_TCBNextIndex];
-    OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
+		OS_TCBNextIndex = taskMaxPriorityIndex;
 
-    OS_EXIT_CRITICAL();
+		OS_TCBNext = OS_TCBList[OS_TCBNextIndex];
+		OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
 
-    OS_TriggerContextSwitch();
+		OS_EXIT_CRITICAL();
+
+		OS_TriggerContextSwitch();
+	}
+
+	OS_EXIT_CRITICAL();
+
 }
 
 
 void OS_Init(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
+
+	OS_schedEnabled = FALSE;
 
     OS_TCBItemsInList = 0ul;
     OS_TCBCurrentIndex = 0ul;
@@ -190,8 +202,7 @@ void OS_Init(OS_Error_E *err) {
 
     if (errLocal == OS_ERROR_NONE) {
     	OS_TCBCurrent = (OS_TCB_S *)0;
-    	OS_TCBNext = OS_TCBList[0];
-    	OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
+    	OS_TCBNext = &taskIdleTCB;
     }
 
     if (err != NULL) {
@@ -200,10 +211,27 @@ void OS_Init(OS_Error_E *err) {
 }
 
 
-void OS_Start(OS_Error_E *err) {
+void OS_EnableScheduler(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
 
-    OS_Schedule();
+	OS_ENTER_CRITICAL();
+	OS_schedEnabled = TRUE;
+	OS_EXIT_CRITICAL();
+
+	OS_Schedule();
+
+    if (err != NULL) {
+    	*err = errLocal;
+    }
+}
+
+
+void OS_DisableScheduler(OS_Error_E *err) {
+	OS_Error_E errLocal = OS_ERROR_NONE;
+
+	OS_ENTER_CRITICAL();
+	OS_schedEnabled = FALSE;
+	OS_EXIT_CRITICAL();
 
     if (err != NULL) {
     	*err = errLocal;
@@ -220,18 +248,11 @@ void OS_delayTicks(uint32_t ticks) {
     OS_ENTER_CRITICAL();
     
     OS_TCBCurrent->taskTick = ticks;
-    OS_TCBCurrent->lockedByTick = TRUE;
     OS_TCBCurrent->taskState = OS_TASK_STATE_PENDING;
 
     OS_EXIT_CRITICAL();
 
     OS_Schedule();
-
-    OS_ENTER_CRITICAL();
-
-    OS_TCBCurrent->lockedByTick = FALSE;
-
-    OS_EXIT_CRITICAL();
 }
 
 
