@@ -77,17 +77,9 @@ int main(void) {
 			256ul,
 			NULL);
 
-	OS_TaskCreate(&task3TCB,
-			task3,
-			3ul,
-			(uint8_t *)"task3",
-			task3Stack,
-			256ul,
-			NULL);
-
 	OS_MutexInit(&mutex1, 0, NULL);
 
-	OS_Start(NULL);
+	OS_EnableScheduler(NULL);
 
 	/* This line should not be reached if OS is initialized properly */
 	for(;;);
@@ -124,6 +116,14 @@ static void task1(void) {
 static void task2(void) {
 	uint32_t t2 = 0ul;
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+
+	OS_TaskCreate(&task3TCB,
+			task3,
+			0ul,
+			(uint8_t *)"task3",
+			task3Stack,
+			256ul,
+			NULL);
 
 	OS_delayTicks(2);
 	while(2) {
