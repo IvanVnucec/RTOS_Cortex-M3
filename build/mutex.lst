@@ -1,0 +1,1230 @@
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.eabi_attribute 20, 1
+   3              		.eabi_attribute 21, 1
+   4              		.eabi_attribute 23, 3
+   5              		.eabi_attribute 24, 1
+   6              		.eabi_attribute 25, 1
+   7              		.eabi_attribute 26, 1
+   8              		.eabi_attribute 30, 1
+   9              		.eabi_attribute 34, 1
+  10              		.eabi_attribute 18, 4
+  11              		.file	"mutex.c"
+  12              		.text
+  13              	.Ltext0:
+  14              		.cfi_sections	.debug_frame
+  15              		.section	.text.OS_MutexInit,"ax",%progbits
+  16              		.align	1
+  17              		.global	OS_MutexInit
+  18              		.arch armv7-m
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  22              		.fpu softvfp
+  24              	OS_MutexInit:
+  25              	.LVL0:
+  26              	.LFB0:
+  27              		.file 1 "src/rtos/mutex.c"
+   1:src/rtos/mutex.c **** /**************************************************************************************************
+   2:src/rtos/mutex.c ****  *                         INCLUDE FILES
+   3:src/rtos/mutex.c ****  **************************************************************************************************
+   4:src/rtos/mutex.c **** #include <stdint.h>
+   5:src/rtos/mutex.c **** 
+   6:src/rtos/mutex.c **** #include "mutex.h"
+   7:src/rtos/mutex.c **** #include "mutex_forward.h"
+   8:src/rtos/mutex.c **** #include "os.h"
+   9:src/rtos/mutex.c **** #include "os_forward.h"
+  10:src/rtos/mutex.c **** 
+  11:src/rtos/mutex.c **** 
+  12:src/rtos/mutex.c **** /**************************************************************************************************
+  13:src/rtos/mutex.c ****  *                         PRIVATE DEFINES
+  14:src/rtos/mutex.c ****  **************************************************************************************************
+  15:src/rtos/mutex.c **** 
+  16:src/rtos/mutex.c **** /**************************************************************************************************
+  17:src/rtos/mutex.c ****  *                         PRIVATE DATA TYPES
+  18:src/rtos/mutex.c ****  **************************************************************************************************
+  19:src/rtos/mutex.c **** 
+  20:src/rtos/mutex.c **** /**************************************************************************************************
+  21:src/rtos/mutex.c ****  *                         PRIVATE VARIABLES
+  22:src/rtos/mutex.c ****  **************************************************************************************************
+  23:src/rtos/mutex.c **** 
+  24:src/rtos/mutex.c **** /**************************************************************************************************
+  25:src/rtos/mutex.c ****  *                         GLOBAL VARIABLES DEFINITION
+  26:src/rtos/mutex.c ****  **************************************************************************************************
+  27:src/rtos/mutex.c **** 
+  28:src/rtos/mutex.c **** /**************************************************************************************************
+  29:src/rtos/mutex.c ****  *                         PRIVATE FUNCTIONS DECLARATION
+  30:src/rtos/mutex.c ****  **************************************************************************************************
+  31:src/rtos/mutex.c **** void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error);
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 2
+
+
+  32:src/rtos/mutex.c **** void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error);
+  33:src/rtos/mutex.c **** void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, OS_MutexError_E* error);
+  34:src/rtos/mutex.c **** 
+  35:src/rtos/mutex.c **** 
+  36:src/rtos/mutex.c **** /**************************************************************************************************
+  37:src/rtos/mutex.c ****  *                         PUBLIC FUNCTIONS DEFINITION
+  38:src/rtos/mutex.c ****  **************************************************************************************************
+  39:src/rtos/mutex.c **** void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *err) {
+  28              		.loc 1 39 84 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  40:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+  33              		.loc 1 40 2 view .LVU1
+  41:src/rtos/mutex.c **** 
+  42:src/rtos/mutex.c **** 	OS_ENTER_CRITICAL();
+  34              		.loc 1 42 2 view .LVU2
+  35              		.syntax unified
+  36              	@ 42 "src/rtos/mutex.c" 1
+  37 0000 72B6     		CPSID I
+  38              	@ 0 "" 2
+  43:src/rtos/mutex.c **** 
+  44:src/rtos/mutex.c **** 	if (mutex != NULL) {
+  39              		.loc 1 44 2 view .LVU3
+  40              		.loc 1 44 5 is_stmt 0 view .LVU4
+  41              		.thumb
+  42              		.syntax unified
+  43 0002 88B1     		cbz	r0, .L11
+  39:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+  44              		.loc 1 39 84 view .LVU5
+  45 0004 10B4     		push	{r4}
+  46              	.LCFI0:
+  47              		.cfi_def_cfa_offset 4
+  48              		.cfi_offset 4, -4
+  45:src/rtos/mutex.c **** 		mutex->state = OS_MUTEX_STATE_FREE;
+  49              		.loc 1 45 3 is_stmt 1 view .LVU6
+  50              		.loc 1 45 16 is_stmt 0 view .LVU7
+  51 0006 0023     		movs	r3, #0
+  52 0008 0370     		strb	r3, [r0]
+  46:src/rtos/mutex.c **** 		mutex->owner = NULL;
+  53              		.loc 1 46 3 is_stmt 1 view .LVU8
+  54              		.loc 1 46 16 is_stmt 0 view .LVU9
+  55 000a 4360     		str	r3, [r0, #4]
+  47:src/rtos/mutex.c **** 		mutex->num_of_pending_tasks = 0ul;
+  56              		.loc 1 47 3 is_stmt 1 view .LVU10
+  57              		.loc 1 47 31 is_stmt 0 view .LVU11
+  58 000c C0F80831 		str	r3, [r0, #264]
+  48:src/rtos/mutex.c **** 		mutex->isInitialized = TRUE;
+  59              		.loc 1 48 3 is_stmt 1 view .LVU12
+  60              		.loc 1 48 24 is_stmt 0 view .LVU13
+  61 0010 0124     		movs	r4, #1
+  62 0012 C0F80C41 		str	r4, [r0, #268]
+  49:src/rtos/mutex.c **** 		mutex->prioInversion = prioInversion;
+  63              		.loc 1 49 3 is_stmt 1 view .LVU14
+  64              		.loc 1 49 24 is_stmt 0 view .LVU15
+  65 0016 C0F81011 		str	r1, [r0, #272]
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 3
+
+
+  50:src/rtos/mutex.c **** 		mutex->isPrioInversion = FALSE;
+  66              		.loc 1 50 3 is_stmt 1 view .LVU16
+  67              		.loc 1 50 26 is_stmt 0 view .LVU17
+  68 001a C0F81831 		str	r3, [r0, #280]
+  69              	.LVL1:
+  51:src/rtos/mutex.c **** 
+  52:src/rtos/mutex.c **** 	} else {
+  53:src/rtos/mutex.c **** 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
+  54:src/rtos/mutex.c **** 	}
+  55:src/rtos/mutex.c **** 
+  56:src/rtos/mutex.c **** 	OS_EXIT_CRITICAL();
+  70              		.loc 1 56 2 is_stmt 1 view .LVU18
+  71              		.syntax unified
+  72              	@ 56 "src/rtos/mutex.c" 1
+  73 001e 62B6     		CPSIE I
+  74              	@ 0 "" 2
+  57:src/rtos/mutex.c **** 
+  58:src/rtos/mutex.c **** 	if (err != NULL) {
+  75              		.loc 1 58 2 view .LVU19
+  76              		.loc 1 58 5 is_stmt 0 view .LVU20
+  77              		.thumb
+  78              		.syntax unified
+  79 0020 02B1     		cbz	r2, .L1
+  59:src/rtos/mutex.c **** 		*err = errLocal;
+  80              		.loc 1 59 3 is_stmt 1 view .LVU21
+  81              		.loc 1 59 8 is_stmt 0 view .LVU22
+  82 0022 1370     		strb	r3, [r2]
+  83              	.L1:
+  60:src/rtos/mutex.c **** 	}
+  61:src/rtos/mutex.c **** }
+  84              		.loc 1 61 1 view .LVU23
+  85 0024 10BC     		pop	{r4}
+  86              	.LCFI1:
+  87              		.cfi_restore 4
+  88              		.cfi_def_cfa_offset 0
+  89 0026 7047     		bx	lr
+  90              	.LVL2:
+  91              	.L11:
+  53:src/rtos/mutex.c **** 	}
+  92              		.loc 1 53 12 view .LVU24
+  93 0028 0123     		movs	r3, #1
+  94              	.LVL3:
+  56:src/rtos/mutex.c **** 
+  95              		.loc 1 56 2 is_stmt 1 view .LVU25
+  96              		.syntax unified
+  97              	@ 56 "src/rtos/mutex.c" 1
+  98 002a 62B6     		CPSIE I
+  99              	@ 0 "" 2
+  58:src/rtos/mutex.c **** 		*err = errLocal;
+ 100              		.loc 1 58 2 view .LVU26
+  58:src/rtos/mutex.c **** 		*err = errLocal;
+ 101              		.loc 1 58 5 is_stmt 0 view .LVU27
+ 102              		.thumb
+ 103              		.syntax unified
+ 104 002c 0AB1     		cbz	r2, .L8
+  59:src/rtos/mutex.c **** 	}
+ 105              		.loc 1 59 3 is_stmt 1 view .LVU28
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 4
+
+
+  59:src/rtos/mutex.c **** 	}
+ 106              		.loc 1 59 8 is_stmt 0 view .LVU29
+ 107 002e 1370     		strb	r3, [r2]
+ 108 0030 7047     		bx	lr
+ 109              	.L8:
+  59:src/rtos/mutex.c **** 	}
+ 110              		.loc 1 59 8 view .LVU30
+ 111 0032 7047     		bx	lr
+ 112              		.cfi_endproc
+ 113              	.LFE0:
+ 115              		.section	.text.MutexTCBPendingListAdd,"ax",%progbits
+ 116              		.align	1
+ 117              		.global	MutexTCBPendingListAdd
+ 118              		.syntax unified
+ 119              		.thumb
+ 120              		.thumb_func
+ 121              		.fpu softvfp
+ 123              	MutexTCBPendingListAdd:
+ 124              	.LVL4:
+ 125              	.LFB3:
+  62:src/rtos/mutex.c **** 
+  63:src/rtos/mutex.c **** 
+  64:src/rtos/mutex.c **** void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
+  65:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+  66:src/rtos/mutex.c **** 
+  67:src/rtos/mutex.c **** 	OS_ENTER_CRITICAL();
+  68:src/rtos/mutex.c **** 
+  69:src/rtos/mutex.c **** 	if (mutex != NULL) {
+  70:src/rtos/mutex.c **** 		if (mutex->isInitialized == TRUE) {
+  71:src/rtos/mutex.c **** 			if (mutex->state == OS_MUTEX_STATE_FREE) {
+  72:src/rtos/mutex.c **** 				mutex->owner = OS_TCBCurrent;
+  73:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_OWNED;
+  74:src/rtos/mutex.c **** 
+  75:src/rtos/mutex.c **** 			} else {
+  76:src/rtos/mutex.c **** 				/* if current TCB has higher priority that mutex owner TCB */
+  77:src/rtos/mutex.c **** 				if (OS_TCBCurrent->taskPriority < mutex->owner->taskPriority) {
+  78:src/rtos/mutex.c **** 					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+  79:src/rtos/mutex.c **** 					mutex->owner->taskPriority = mutex->prioInversion;
+  80:src/rtos/mutex.c **** 					mutex->isPrioInversion = TRUE;
+  81:src/rtos/mutex.c **** 				}
+  82:src/rtos/mutex.c **** 
+  83:src/rtos/mutex.c **** 				MutexTCBPendingListAdd(mutex, OS_TCBCurrent, &errLocal);
+  84:src/rtos/mutex.c **** 
+  85:src/rtos/mutex.c **** 				if (errLocal == OS_MUTEX_ERROR_NONE) {
+  86:src/rtos/mutex.c **** 					if (timeout > 0) {
+  87:src/rtos/mutex.c **** 						OS_delayTicks(timeout);
+  88:src/rtos/mutex.c **** 
+  89:src/rtos/mutex.c **** 						if (OS_TCBCurrent->taskTick > 0) {
+  90:src/rtos/mutex.c **** 							/* pend it */
+  91:src/rtos/mutex.c **** 							mutex->owner = OS_TCBCurrent;
+  92:src/rtos/mutex.c **** 							mutex->state = OS_MUTEX_STATE_OWNED;
+  93:src/rtos/mutex.c **** 
+  94:src/rtos/mutex.c **** 						} else {
+  95:src/rtos/mutex.c **** 							MutexTCBPendingListRemove(mutex, OS_TCBCurrent,
+  96:src/rtos/mutex.c **** 									&errLocal);
+  97:src/rtos/mutex.c **** 
+  98:src/rtos/mutex.c **** 							if (errLocal == OS_MUTEX_ERROR_NONE) {
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 5
+
+
+  99:src/rtos/mutex.c **** 								errLocal = OS_MUTEX_ERROR_TIMEOUT;
+ 100:src/rtos/mutex.c **** 							}
+ 101:src/rtos/mutex.c **** 						}
+ 102:src/rtos/mutex.c **** 
+ 103:src/rtos/mutex.c **** 					} else {
+ 104:src/rtos/mutex.c **** 						OS_EXIT_CRITICAL();
+ 105:src/rtos/mutex.c **** 						OS_Schedule();
+ 106:src/rtos/mutex.c **** 						OS_ENTER_CRITICAL();
+ 107:src/rtos/mutex.c **** 
+ 108:src/rtos/mutex.c **** 						mutex->owner = OS_TCBCurrent;
+ 109:src/rtos/mutex.c **** 						mutex->state = OS_MUTEX_STATE_OWNED;
+ 110:src/rtos/mutex.c **** 					}
+ 111:src/rtos/mutex.c **** 				}
+ 112:src/rtos/mutex.c **** 			}
+ 113:src/rtos/mutex.c **** 
+ 114:src/rtos/mutex.c **** 		} else {
+ 115:src/rtos/mutex.c **** 			errLocal = OS_MUTEX_ERROR_NOT_INITIALIZED;
+ 116:src/rtos/mutex.c **** 		}
+ 117:src/rtos/mutex.c **** 
+ 118:src/rtos/mutex.c **** 	} else {
+ 119:src/rtos/mutex.c **** 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
+ 120:src/rtos/mutex.c **** 	}
+ 121:src/rtos/mutex.c **** 
+ 122:src/rtos/mutex.c **** 	OS_EXIT_CRITICAL();
+ 123:src/rtos/mutex.c **** 
+ 124:src/rtos/mutex.c **** 	if (err != NULL) {
+ 125:src/rtos/mutex.c **** 		*err = errLocal;
+ 126:src/rtos/mutex.c **** 	}
+ 127:src/rtos/mutex.c **** }
+ 128:src/rtos/mutex.c **** 
+ 129:src/rtos/mutex.c **** 
+ 130:src/rtos/mutex.c **** void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
+ 131:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+ 132:src/rtos/mutex.c **** 
+ 133:src/rtos/mutex.c **** 	if (mutex != NULL) {
+ 134:src/rtos/mutex.c **** 		OS_ENTER_CRITICAL();
+ 135:src/rtos/mutex.c **** 
+ 136:src/rtos/mutex.c **** 		if (mutex->owner != NULL) {
+ 137:src/rtos/mutex.c **** 			/* only the owner of mutex can post mutex */
+ 138:src/rtos/mutex.c **** 			if (mutex->owner == OS_TCBCurrent) {
+ 139:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_FREE;
+ 140:src/rtos/mutex.c **** 				if (mutex->isPrioInversion == TRUE) {
+ 141:src/rtos/mutex.c **** 					mutex->isPrioInversion = FALSE;
+ 142:src/rtos/mutex.c **** 					mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
+ 143:src/rtos/mutex.c **** 				}
+ 144:src/rtos/mutex.c **** 
+ 145:src/rtos/mutex.c **** 				mutex->owner = NULL;
+ 146:src/rtos/mutex.c **** 				MutexTCBPendingListRemoveAll(mutex, &errLocal);
+ 147:src/rtos/mutex.c **** 
+ 148:src/rtos/mutex.c **** 				if (errLocal == OS_MUTEX_ERROR_NONE) {
+ 149:src/rtos/mutex.c **** 					OS_EXIT_CRITICAL();
+ 150:src/rtos/mutex.c **** 					OS_Schedule();
+ 151:src/rtos/mutex.c **** 					OS_ENTER_CRITICAL();
+ 152:src/rtos/mutex.c **** 				}
+ 153:src/rtos/mutex.c **** 
+ 154:src/rtos/mutex.c **** 			} else {
+ 155:src/rtos/mutex.c **** 				errLocal = OS_MUTEX_ERROR_NOT_OWNER_POST;
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 6
+
+
+ 156:src/rtos/mutex.c **** 			}
+ 157:src/rtos/mutex.c **** 		} else {
+ 158:src/rtos/mutex.c **** 			errLocal = OS_MUTEX_ERROR_NULL_PTR;
+ 159:src/rtos/mutex.c **** 		}
+ 160:src/rtos/mutex.c **** 
+ 161:src/rtos/mutex.c **** 	} else {
+ 162:src/rtos/mutex.c **** 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
+ 163:src/rtos/mutex.c **** 	}
+ 164:src/rtos/mutex.c **** 
+ 165:src/rtos/mutex.c **** 	OS_EXIT_CRITICAL();
+ 166:src/rtos/mutex.c **** 
+ 167:src/rtos/mutex.c **** 	if (err != NULL) {
+ 168:src/rtos/mutex.c **** 		*err = errLocal;
+ 169:src/rtos/mutex.c **** 	}
+ 170:src/rtos/mutex.c **** }
+ 171:src/rtos/mutex.c **** 
+ 172:src/rtos/mutex.c **** 
+ 173:src/rtos/mutex.c **** /******************************************** *****************************************************
+ 174:src/rtos/mutex.c ****  *                         PRIVATE FUNCTIONS DEFINITION
+ 175:src/rtos/mutex.c ****  **************************************************************************************************
+ 176:src/rtos/mutex.c **** 
+ 177:src/rtos/mutex.c **** /* TODO: This functions below should be implemented with lists and not with arrays IvanVnucec*/
+ 178:src/rtos/mutex.c **** void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error) {
+ 126              		.loc 1 178 87 is_stmt 1 view -0
+ 127              		.cfi_startproc
+ 128              		@ args = 0, pretend = 0, frame = 0
+ 129              		@ frame_needed = 0, uses_anonymous_args = 0
+ 130              		@ link register save eliminated.
+ 179:src/rtos/mutex.c **** 	OS_MutexError_E err = OS_MUTEX_ERROR_NONE;
+ 131              		.loc 1 179 2 view .LVU32
+ 180:src/rtos/mutex.c **** 
+ 181:src/rtos/mutex.c **** 	if (mutex->num_of_pending_tasks < OS_MUTEX_PENDING_TASKS_ARRAY_SIZE) {
+ 132              		.loc 1 181 2 view .LVU33
+ 133              		.loc 1 181 11 is_stmt 0 view .LVU34
+ 134 0000 D0F80831 		ldr	r3, [r0, #264]
+ 135              		.loc 1 181 5 view .LVU35
+ 136 0004 3F2B     		cmp	r3, #63
+ 137 0006 0ED8     		bhi	.L15
+ 182:src/rtos/mutex.c **** 		tcb->taskState = OS_TASK_STATE_PENDING;
+ 138              		.loc 1 182 3 is_stmt 1 view .LVU36
+ 139              		.loc 1 182 18 is_stmt 0 view .LVU37
+ 140 0008 0323     		movs	r3, #3
+ 141 000a 0B71     		strb	r3, [r1, #4]
+ 183:src/rtos/mutex.c **** 		mutex->pending_tasks[mutex->num_of_pending_tasks] = tcb;
+ 142              		.loc 1 183 3 is_stmt 1 view .LVU38
+ 143              		.loc 1 183 29 is_stmt 0 view .LVU39
+ 144 000c D0F80831 		ldr	r3, [r0, #264]
+ 145              		.loc 1 183 53 view .LVU40
+ 146 0010 03F1020C 		add	ip, r3, #2
+ 147 0014 40F82C10 		str	r1, [r0, ip, lsl #2]
+ 184:src/rtos/mutex.c **** 		mutex->num_of_pending_tasks++;
+ 148              		.loc 1 184 3 is_stmt 1 view .LVU41
+ 149              		.loc 1 184 30 is_stmt 0 view .LVU42
+ 150 0018 0133     		adds	r3, r3, #1
+ 151 001a C0F80831 		str	r3, [r0, #264]
+ 179:src/rtos/mutex.c **** 
+ 152              		.loc 1 179 18 view .LVU43
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 7
+
+
+ 153 001e 0023     		movs	r3, #0
+ 154              	.L13:
+ 155              	.LVL5:
+ 185:src/rtos/mutex.c **** 
+ 186:src/rtos/mutex.c **** 	} else {
+ 187:src/rtos/mutex.c **** 		/* TODO: Add meaningfull errors. IvanVnucec */
+ 188:src/rtos/mutex.c **** 		err = !OS_MUTEX_ERROR_NONE;
+ 189:src/rtos/mutex.c **** 	}
+ 190:src/rtos/mutex.c **** 
+ 191:src/rtos/mutex.c **** 
+ 192:src/rtos/mutex.c **** 	if (error != NULL) {
+ 156              		.loc 1 192 2 is_stmt 1 view .LVU44
+ 157              		.loc 1 192 5 is_stmt 0 view .LVU45
+ 158 0020 02B1     		cbz	r2, .L12
+ 193:src/rtos/mutex.c **** 		*error = err;
+ 159              		.loc 1 193 3 is_stmt 1 view .LVU46
+ 160              		.loc 1 193 10 is_stmt 0 view .LVU47
+ 161 0022 1370     		strb	r3, [r2]
+ 162              	.L12:
+ 194:src/rtos/mutex.c **** 	}
+ 195:src/rtos/mutex.c **** }
+ 163              		.loc 1 195 1 view .LVU48
+ 164 0024 7047     		bx	lr
+ 165              	.LVL6:
+ 166              	.L15:
+ 188:src/rtos/mutex.c **** 	}
+ 167              		.loc 1 188 7 view .LVU49
+ 168 0026 0123     		movs	r3, #1
+ 169 0028 FAE7     		b	.L13
+ 170              		.cfi_endproc
+ 171              	.LFE3:
+ 173              		.section	.text.MutexTCBPendingListRemove,"ax",%progbits
+ 174              		.align	1
+ 175              		.global	MutexTCBPendingListRemove
+ 176              		.syntax unified
+ 177              		.thumb
+ 178              		.thumb_func
+ 179              		.fpu softvfp
+ 181              	MutexTCBPendingListRemove:
+ 182              	.LVL7:
+ 183              	.LFB4:
+ 196:src/rtos/mutex.c **** 
+ 197:src/rtos/mutex.c **** 
+ 198:src/rtos/mutex.c **** void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error) {
+ 184              		.loc 1 198 90 is_stmt 1 view -0
+ 185              		.cfi_startproc
+ 186              		@ args = 0, pretend = 0, frame = 0
+ 187              		@ frame_needed = 0, uses_anonymous_args = 0
+ 188              		@ link register save eliminated.
+ 189              		.loc 1 198 90 is_stmt 0 view .LVU51
+ 190 0000 70B4     		push	{r4, r5, r6}
+ 191              	.LCFI2:
+ 192              		.cfi_def_cfa_offset 12
+ 193              		.cfi_offset 4, -12
+ 194              		.cfi_offset 5, -8
+ 195              		.cfi_offset 6, -4
+ 199:src/rtos/mutex.c **** 	OS_MutexError_E err = OS_MUTEX_ERROR_NONE;
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 8
+
+
+ 196              		.loc 1 199 2 is_stmt 1 view .LVU52
+ 197              	.LVL8:
+ 200:src/rtos/mutex.c **** 	uint32_t i;
+ 198              		.loc 1 200 2 view .LVU53
+ 201:src/rtos/mutex.c **** 
+ 202:src/rtos/mutex.c **** 	if (mutex->num_of_pending_tasks > 0u) {
+ 199              		.loc 1 202 2 view .LVU54
+ 200              		.loc 1 202 11 is_stmt 0 view .LVU55
+ 201 0002 D0F80841 		ldr	r4, [r0, #264]
+ 202              		.loc 1 202 5 view .LVU56
+ 203 0006 ECB1     		cbz	r4, .L18
+ 203:src/rtos/mutex.c **** 		i = 0ul;
+ 204              		.loc 1 203 5 view .LVU57
+ 205 0008 0023     		movs	r3, #0
+ 206 000a 00E0     		b	.L17
+ 207              	.LVL9:
+ 208              	.L20:
+ 204:src/rtos/mutex.c **** 		while (mutex->pending_tasks[i] != tcb && i < mutex->num_of_pending_tasks) {
+ 205:src/rtos/mutex.c **** 			i++;
+ 209              		.loc 1 205 4 is_stmt 1 view .LVU58
+ 210              		.loc 1 205 5 is_stmt 0 view .LVU59
+ 211 000c 0133     		adds	r3, r3, #1
+ 212              	.LVL10:
+ 213              	.L17:
+ 204:src/rtos/mutex.c **** 		while (mutex->pending_tasks[i] != tcb && i < mutex->num_of_pending_tasks) {
+ 214              		.loc 1 204 9 is_stmt 1 view .LVU60
+ 204:src/rtos/mutex.c **** 		while (mutex->pending_tasks[i] != tcb && i < mutex->num_of_pending_tasks) {
+ 215              		.loc 1 204 30 is_stmt 0 view .LVU61
+ 216 000e 9D1C     		adds	r5, r3, #2
+ 217 0010 50F82550 		ldr	r5, [r0, r5, lsl #2]
+ 204:src/rtos/mutex.c **** 		while (mutex->pending_tasks[i] != tcb && i < mutex->num_of_pending_tasks) {
+ 218              		.loc 1 204 9 view .LVU62
+ 219 0014 8D42     		cmp	r5, r1
+ 220 0016 01D0     		beq	.L21
+ 204:src/rtos/mutex.c **** 		while (mutex->pending_tasks[i] != tcb && i < mutex->num_of_pending_tasks) {
+ 221              		.loc 1 204 41 discriminator 1 view .LVU63
+ 222 0018 9C42     		cmp	r4, r3
+ 223 001a F7D8     		bhi	.L20
+ 224              	.L21:
+ 206:src/rtos/mutex.c **** 		}
+ 207:src/rtos/mutex.c **** 
+ 208:src/rtos/mutex.c **** 		/* assumption: only one tcb needs to be removed */
+ 209:src/rtos/mutex.c **** 		/* shift every tcb in list to one place to the left */
+ 210:src/rtos/mutex.c **** 		while(i < mutex->num_of_pending_tasks-1) {
+ 225              		.loc 1 210 8 is_stmt 1 view .LVU64
+ 226              		.loc 1 210 40 is_stmt 0 view .LVU65
+ 227 001c 651E     		subs	r5, r4, #1
+ 228              		.loc 1 210 8 view .LVU66
+ 229 001e 9D42     		cmp	r5, r3
+ 230 0020 07D9     		bls	.L26
+ 211:src/rtos/mutex.c **** 			mutex->pending_tasks[i] = mutex->pending_tasks[i+1];
+ 231              		.loc 1 211 4 is_stmt 1 view .LVU67
+ 232              		.loc 1 211 50 is_stmt 0 view .LVU68
+ 233 0022 DD1C     		adds	r5, r3, #3
+ 234 0024 50F82560 		ldr	r6, [r0, r5, lsl #2]
+ 235              		.loc 1 211 28 view .LVU69
+ 236 0028 9D1C     		adds	r5, r3, #2
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 9
+
+
+ 237 002a 40F82560 		str	r6, [r0, r5, lsl #2]
+ 212:src/rtos/mutex.c **** 			i++;
+ 238              		.loc 1 212 4 is_stmt 1 view .LVU70
+ 239              	.LVL11:
+ 240              		.loc 1 212 5 is_stmt 0 view .LVU71
+ 241 002e 0133     		adds	r3, r3, #1
+ 242              	.LVL12:
+ 243              		.loc 1 212 5 view .LVU72
+ 244 0030 F4E7     		b	.L21
+ 245              	.L26:
+ 213:src/rtos/mutex.c **** 		}
+ 214:src/rtos/mutex.c **** 
+ 215:src/rtos/mutex.c **** 		mutex->num_of_pending_tasks--;
+ 246              		.loc 1 215 3 is_stmt 1 view .LVU73
+ 247              		.loc 1 215 30 is_stmt 0 view .LVU74
+ 248 0032 C0F80851 		str	r5, [r0, #264]
+ 216:src/rtos/mutex.c **** 		tcb->taskState = OS_TASK_STATE_READY;
+ 249              		.loc 1 216 3 is_stmt 1 view .LVU75
+ 250              		.loc 1 216 18 is_stmt 0 view .LVU76
+ 251 0036 0124     		movs	r4, #1
+ 252 0038 0C71     		strb	r4, [r1, #4]
+ 217:src/rtos/mutex.c **** 		/* so OS_tick won't enable it again */
+ 218:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskTick = 0;
+ 253              		.loc 1 218 3 is_stmt 1 view .LVU77
+ 254              		.loc 1 218 23 is_stmt 0 view .LVU78
+ 255 003a 0233     		adds	r3, r3, #2
+ 256              	.LVL13:
+ 257              		.loc 1 218 23 view .LVU79
+ 258 003c 50F82330 		ldr	r3, [r0, r3, lsl #2]
+ 259              	.LVL14:
+ 260              		.loc 1 218 37 view .LVU80
+ 261 0040 0021     		movs	r1, #0
+ 262              	.LVL15:
+ 263              		.loc 1 218 37 view .LVU81
+ 264 0042 D960     		str	r1, [r3, #12]
+ 265              	.L18:
+ 219:src/rtos/mutex.c **** 
+ 220:src/rtos/mutex.c **** 	}
+ 221:src/rtos/mutex.c **** 
+ 222:src/rtos/mutex.c **** 	if (error != NULL) {
+ 266              		.loc 1 222 2 is_stmt 1 view .LVU82
+ 267              		.loc 1 222 5 is_stmt 0 view .LVU83
+ 268 0044 0AB1     		cbz	r2, .L16
+ 223:src/rtos/mutex.c **** 		*error = err;
+ 269              		.loc 1 223 3 is_stmt 1 view .LVU84
+ 270              		.loc 1 223 10 is_stmt 0 view .LVU85
+ 271 0046 0023     		movs	r3, #0
+ 272 0048 1370     		strb	r3, [r2]
+ 273              	.L16:
+ 224:src/rtos/mutex.c **** 	}
+ 225:src/rtos/mutex.c **** }
+ 274              		.loc 1 225 1 view .LVU86
+ 275 004a 70BC     		pop	{r4, r5, r6}
+ 276              	.LCFI3:
+ 277              		.cfi_restore 6
+ 278              		.cfi_restore 5
+ 279              		.cfi_restore 4
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 10
+
+
+ 280              		.cfi_def_cfa_offset 0
+ 281 004c 7047     		bx	lr
+ 282              		.cfi_endproc
+ 283              	.LFE4:
+ 285              		.section	.text.OS_MutexPend,"ax",%progbits
+ 286              		.align	1
+ 287              		.global	OS_MutexPend
+ 288              		.syntax unified
+ 289              		.thumb
+ 290              		.thumb_func
+ 291              		.fpu softvfp
+ 293              	OS_MutexPend:
+ 294              	.LVL16:
+ 295              	.LFB1:
+  64:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+ 296              		.loc 1 64 78 is_stmt 1 view -0
+ 297              		.cfi_startproc
+ 298              		@ args = 0, pretend = 0, frame = 8
+ 299              		@ frame_needed = 0, uses_anonymous_args = 0
+  64:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+ 300              		.loc 1 64 78 is_stmt 0 view .LVU88
+ 301 0000 70B5     		push	{r4, r5, r6, lr}
+ 302              	.LCFI4:
+ 303              		.cfi_def_cfa_offset 16
+ 304              		.cfi_offset 4, -16
+ 305              		.cfi_offset 5, -12
+ 306              		.cfi_offset 6, -8
+ 307              		.cfi_offset 14, -4
+ 308 0002 82B0     		sub	sp, sp, #8
+ 309              	.LCFI5:
+ 310              		.cfi_def_cfa_offset 24
+ 311 0004 1646     		mov	r6, r2
+  65:src/rtos/mutex.c **** 
+ 312              		.loc 1 65 2 is_stmt 1 view .LVU89
+  65:src/rtos/mutex.c **** 
+ 313              		.loc 1 65 18 is_stmt 0 view .LVU90
+ 314 0006 0023     		movs	r3, #0
+ 315 0008 8DF80730 		strb	r3, [sp, #7]
+  67:src/rtos/mutex.c **** 
+ 316              		.loc 1 67 2 is_stmt 1 view .LVU91
+ 317              		.syntax unified
+ 318              	@ 67 "src/rtos/mutex.c" 1
+ 319 000c 72B6     		CPSID I
+ 320              	@ 0 "" 2
+  69:src/rtos/mutex.c **** 		if (mutex->isInitialized == TRUE) {
+ 321              		.loc 1 69 2 view .LVU92
+  69:src/rtos/mutex.c **** 		if (mutex->isInitialized == TRUE) {
+ 322              		.loc 1 69 5 is_stmt 0 view .LVU93
+ 323              		.thumb
+ 324              		.syntax unified
+ 325 000e 0028     		cmp	r0, #0
+ 326 0010 52D0     		beq	.L28
+ 327 0012 0446     		mov	r4, r0
+ 328 0014 0D46     		mov	r5, r1
+  70:src/rtos/mutex.c **** 			if (mutex->state == OS_MUTEX_STATE_FREE) {
+ 329              		.loc 1 70 3 is_stmt 1 view .LVU94
+  70:src/rtos/mutex.c **** 			if (mutex->state == OS_MUTEX_STATE_FREE) {
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 11
+
+
+ 330              		.loc 1 70 12 is_stmt 0 view .LVU95
+ 331 0016 D0F80C31 		ldr	r3, [r0, #268]
+  70:src/rtos/mutex.c **** 			if (mutex->state == OS_MUTEX_STATE_FREE) {
+ 332              		.loc 1 70 6 view .LVU96
+ 333 001a 012B     		cmp	r3, #1
+ 334 001c 09D0     		beq	.L37
+ 115:src/rtos/mutex.c **** 		}
+ 335              		.loc 1 115 4 is_stmt 1 view .LVU97
+ 115:src/rtos/mutex.c **** 		}
+ 336              		.loc 1 115 13 is_stmt 0 view .LVU98
+ 337 001e 0423     		movs	r3, #4
+ 338 0020 8DF80730 		strb	r3, [sp, #7]
+ 339              	.LVL17:
+ 340              	.L31:
+ 122:src/rtos/mutex.c **** 
+ 341              		.loc 1 122 2 is_stmt 1 view .LVU99
+ 342              		.syntax unified
+ 343              	@ 122 "src/rtos/mutex.c" 1
+ 344 0024 62B6     		CPSIE I
+ 345              	@ 0 "" 2
+ 124:src/rtos/mutex.c **** 		*err = errLocal;
+ 346              		.loc 1 124 2 view .LVU100
+ 124:src/rtos/mutex.c **** 		*err = errLocal;
+ 347              		.loc 1 124 5 is_stmt 0 view .LVU101
+ 348              		.thumb
+ 349              		.syntax unified
+ 350 0026 16B1     		cbz	r6, .L27
+ 125:src/rtos/mutex.c **** 	}
+ 351              		.loc 1 125 3 is_stmt 1 view .LVU102
+ 125:src/rtos/mutex.c **** 	}
+ 352              		.loc 1 125 8 is_stmt 0 view .LVU103
+ 353 0028 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 354 002c 3370     		strb	r3, [r6]
+ 355              	.L27:
+ 127:src/rtos/mutex.c **** 
+ 356              		.loc 1 127 1 view .LVU104
+ 357 002e 02B0     		add	sp, sp, #8
+ 358              	.LCFI6:
+ 359              		.cfi_remember_state
+ 360              		.cfi_def_cfa_offset 16
+ 361              		@ sp needed
+ 362 0030 70BD     		pop	{r4, r5, r6, pc}
+ 363              	.LVL18:
+ 364              	.L37:
+ 365              	.LCFI7:
+ 366              		.cfi_restore_state
+  71:src/rtos/mutex.c **** 				mutex->owner = OS_TCBCurrent;
+ 367              		.loc 1 71 4 is_stmt 1 view .LVU105
+  71:src/rtos/mutex.c **** 				mutex->owner = OS_TCBCurrent;
+ 368              		.loc 1 71 13 is_stmt 0 view .LVU106
+ 369 0032 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+  71:src/rtos/mutex.c **** 				mutex->owner = OS_TCBCurrent;
+ 370              		.loc 1 71 7 view .LVU107
+ 371 0034 2BB9     		cbnz	r3, .L30
+  72:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_OWNED;
+ 372              		.loc 1 72 5 is_stmt 1 view .LVU108
+  72:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_OWNED;
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 12
+
+
+ 373              		.loc 1 72 18 is_stmt 0 view .LVU109
+ 374 0036 224B     		ldr	r3, .L38
+ 375 0038 1B68     		ldr	r3, [r3]
+ 376 003a 4360     		str	r3, [r0, #4]
+  73:src/rtos/mutex.c **** 
+ 377              		.loc 1 73 5 is_stmt 1 view .LVU110
+  73:src/rtos/mutex.c **** 
+ 378              		.loc 1 73 18 is_stmt 0 view .LVU111
+ 379 003c 0123     		movs	r3, #1
+ 380 003e 0370     		strb	r3, [r0]
+ 381 0040 F0E7     		b	.L31
+ 382              	.L30:
+  77:src/rtos/mutex.c **** 					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+ 383              		.loc 1 77 5 is_stmt 1 view .LVU112
+  77:src/rtos/mutex.c **** 					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+ 384              		.loc 1 77 22 is_stmt 0 view .LVU113
+ 385 0042 1F4B     		ldr	r3, .L38
+ 386 0044 1968     		ldr	r1, [r3]
+ 387              	.LVL19:
+  77:src/rtos/mutex.c **** 					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+ 388              		.loc 1 77 22 view .LVU114
+ 389 0046 8868     		ldr	r0, [r1, #8]
+ 390              	.LVL20:
+  77:src/rtos/mutex.c **** 					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+ 391              		.loc 1 77 44 view .LVU115
+ 392 0048 6368     		ldr	r3, [r4, #4]
+  77:src/rtos/mutex.c **** 					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+ 393              		.loc 1 77 51 view .LVU116
+ 394 004a 9A68     		ldr	r2, [r3, #8]
+ 395              	.LVL21:
+  77:src/rtos/mutex.c **** 					mutex->oldOwnerTaskPriority = mutex->owner->taskPriority;
+ 396              		.loc 1 77 8 view .LVU117
+ 397 004c 9042     		cmp	r0, r2
+ 398 004e 07D2     		bcs	.L32
+  78:src/rtos/mutex.c **** 					mutex->owner->taskPriority = mutex->prioInversion;
+ 399              		.loc 1 78 6 is_stmt 1 view .LVU118
+  78:src/rtos/mutex.c **** 					mutex->owner->taskPriority = mutex->prioInversion;
+ 400              		.loc 1 78 34 is_stmt 0 view .LVU119
+ 401 0050 C4F81421 		str	r2, [r4, #276]
+  79:src/rtos/mutex.c **** 					mutex->isPrioInversion = TRUE;
+ 402              		.loc 1 79 6 is_stmt 1 view .LVU120
+  79:src/rtos/mutex.c **** 					mutex->isPrioInversion = TRUE;
+ 403              		.loc 1 79 40 is_stmt 0 view .LVU121
+ 404 0054 D4F81021 		ldr	r2, [r4, #272]
+  79:src/rtos/mutex.c **** 					mutex->isPrioInversion = TRUE;
+ 405              		.loc 1 79 33 view .LVU122
+ 406 0058 9A60     		str	r2, [r3, #8]
+  80:src/rtos/mutex.c **** 				}
+ 407              		.loc 1 80 6 is_stmt 1 view .LVU123
+  80:src/rtos/mutex.c **** 				}
+ 408              		.loc 1 80 29 is_stmt 0 view .LVU124
+ 409 005a 0123     		movs	r3, #1
+ 410 005c C4F81831 		str	r3, [r4, #280]
+ 411              	.L32:
+  83:src/rtos/mutex.c **** 
+ 412              		.loc 1 83 5 is_stmt 1 view .LVU125
+ 413 0060 0DF10702 		add	r2, sp, #7
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 13
+
+
+ 414 0064 2046     		mov	r0, r4
+ 415 0066 FFF7FEFF 		bl	MutexTCBPendingListAdd
+ 416              	.LVL22:
+  85:src/rtos/mutex.c **** 					if (timeout > 0) {
+ 417              		.loc 1 85 5 view .LVU126
+  85:src/rtos/mutex.c **** 					if (timeout > 0) {
+ 418              		.loc 1 85 18 is_stmt 0 view .LVU127
+ 419 006a 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+  85:src/rtos/mutex.c **** 					if (timeout > 0) {
+ 420              		.loc 1 85 8 view .LVU128
+ 421 006e 002B     		cmp	r3, #0
+ 422 0070 D8D1     		bne	.L31
+  86:src/rtos/mutex.c **** 						OS_delayTicks(timeout);
+ 423              		.loc 1 86 6 is_stmt 1 view .LVU129
+  86:src/rtos/mutex.c **** 						OS_delayTicks(timeout);
+ 424              		.loc 1 86 9 is_stmt 0 view .LVU130
+ 425 0072 BDB1     		cbz	r5, .L33
+  87:src/rtos/mutex.c **** 
+ 426              		.loc 1 87 7 is_stmt 1 view .LVU131
+ 427 0074 2846     		mov	r0, r5
+ 428 0076 FFF7FEFF 		bl	OS_delayTicks
+ 429              	.LVL23:
+  89:src/rtos/mutex.c **** 							/* pend it */
+ 430              		.loc 1 89 7 view .LVU132
+  89:src/rtos/mutex.c **** 							/* pend it */
+ 431              		.loc 1 89 24 is_stmt 0 view .LVU133
+ 432 007a 114B     		ldr	r3, .L38
+ 433 007c 1968     		ldr	r1, [r3]
+ 434 007e CB68     		ldr	r3, [r1, #12]
+  89:src/rtos/mutex.c **** 							/* pend it */
+ 435              		.loc 1 89 10 view .LVU134
+ 436 0080 1BB1     		cbz	r3, .L34
+  91:src/rtos/mutex.c **** 							mutex->state = OS_MUTEX_STATE_OWNED;
+ 437              		.loc 1 91 8 is_stmt 1 view .LVU135
+  91:src/rtos/mutex.c **** 							mutex->state = OS_MUTEX_STATE_OWNED;
+ 438              		.loc 1 91 21 is_stmt 0 view .LVU136
+ 439 0082 6160     		str	r1, [r4, #4]
+  92:src/rtos/mutex.c **** 
+ 440              		.loc 1 92 8 is_stmt 1 view .LVU137
+  92:src/rtos/mutex.c **** 
+ 441              		.loc 1 92 21 is_stmt 0 view .LVU138
+ 442 0084 0123     		movs	r3, #1
+ 443 0086 2370     		strb	r3, [r4]
+ 444 0088 CCE7     		b	.L31
+ 445              	.L34:
+  95:src/rtos/mutex.c **** 									&errLocal);
+ 446              		.loc 1 95 8 is_stmt 1 view .LVU139
+ 447 008a 0DF10702 		add	r2, sp, #7
+ 448 008e 2046     		mov	r0, r4
+ 449 0090 FFF7FEFF 		bl	MutexTCBPendingListRemove
+ 450              	.LVL24:
+  98:src/rtos/mutex.c **** 								errLocal = OS_MUTEX_ERROR_TIMEOUT;
+ 451              		.loc 1 98 8 view .LVU140
+  98:src/rtos/mutex.c **** 								errLocal = OS_MUTEX_ERROR_TIMEOUT;
+ 452              		.loc 1 98 21 is_stmt 0 view .LVU141
+ 453 0094 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+  98:src/rtos/mutex.c **** 								errLocal = OS_MUTEX_ERROR_TIMEOUT;
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 14
+
+
+ 454              		.loc 1 98 11 view .LVU142
+ 455 0098 002B     		cmp	r3, #0
+ 456 009a C3D1     		bne	.L31
+  99:src/rtos/mutex.c **** 							}
+ 457              		.loc 1 99 9 is_stmt 1 view .LVU143
+  99:src/rtos/mutex.c **** 							}
+ 458              		.loc 1 99 18 is_stmt 0 view .LVU144
+ 459 009c 0223     		movs	r3, #2
+ 460 009e 8DF80730 		strb	r3, [sp, #7]
+ 461 00a2 BFE7     		b	.L31
+ 462              	.L33:
+ 104:src/rtos/mutex.c **** 						OS_Schedule();
+ 463              		.loc 1 104 7 is_stmt 1 view .LVU145
+ 464              		.syntax unified
+ 465              	@ 104 "src/rtos/mutex.c" 1
+ 466 00a4 62B6     		CPSIE I
+ 467              	@ 0 "" 2
+ 105:src/rtos/mutex.c **** 						OS_ENTER_CRITICAL();
+ 468              		.loc 1 105 7 view .LVU146
+ 469              		.thumb
+ 470              		.syntax unified
+ 471 00a6 FFF7FEFF 		bl	OS_Schedule
+ 472              	.LVL25:
+ 106:src/rtos/mutex.c **** 
+ 473              		.loc 1 106 7 view .LVU147
+ 474              		.syntax unified
+ 475              	@ 106 "src/rtos/mutex.c" 1
+ 476 00aa 72B6     		CPSID I
+ 477              	@ 0 "" 2
+ 108:src/rtos/mutex.c **** 						mutex->state = OS_MUTEX_STATE_OWNED;
+ 478              		.loc 1 108 7 view .LVU148
+ 108:src/rtos/mutex.c **** 						mutex->state = OS_MUTEX_STATE_OWNED;
+ 479              		.loc 1 108 20 is_stmt 0 view .LVU149
+ 480              		.thumb
+ 481              		.syntax unified
+ 482 00ac 044B     		ldr	r3, .L38
+ 483 00ae 1B68     		ldr	r3, [r3]
+ 484 00b0 6360     		str	r3, [r4, #4]
+ 109:src/rtos/mutex.c **** 					}
+ 485              		.loc 1 109 7 is_stmt 1 view .LVU150
+ 109:src/rtos/mutex.c **** 					}
+ 486              		.loc 1 109 20 is_stmt 0 view .LVU151
+ 487 00b2 0123     		movs	r3, #1
+ 488 00b4 2370     		strb	r3, [r4]
+ 489 00b6 B5E7     		b	.L31
+ 490              	.LVL26:
+ 491              	.L28:
+ 119:src/rtos/mutex.c **** 	}
+ 492              		.loc 1 119 3 is_stmt 1 view .LVU152
+ 119:src/rtos/mutex.c **** 	}
+ 493              		.loc 1 119 12 is_stmt 0 view .LVU153
+ 494 00b8 0123     		movs	r3, #1
+ 495 00ba 8DF80730 		strb	r3, [sp, #7]
+ 496 00be B1E7     		b	.L31
+ 497              	.L39:
+ 498              		.align	2
+ 499              	.L38:
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 15
+
+
+ 500 00c0 00000000 		.word	OS_TCBCurrent
+ 501              		.cfi_endproc
+ 502              	.LFE1:
+ 504              		.section	.text.MutexTCBPendingListRemoveAll,"ax",%progbits
+ 505              		.align	1
+ 506              		.global	MutexTCBPendingListRemoveAll
+ 507              		.syntax unified
+ 508              		.thumb
+ 509              		.thumb_func
+ 510              		.fpu softvfp
+ 512              	MutexTCBPendingListRemoveAll:
+ 513              	.LVL27:
+ 514              	.LFB5:
+ 226:src/rtos/mutex.c **** 
+ 227:src/rtos/mutex.c **** 
+ 228:src/rtos/mutex.c **** void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, OS_MutexError_E* error) {
+ 515              		.loc 1 228 78 is_stmt 1 view -0
+ 516              		.cfi_startproc
+ 517              		@ args = 0, pretend = 0, frame = 0
+ 518              		@ frame_needed = 0, uses_anonymous_args = 0
+ 519              		@ link register save eliminated.
+ 229:src/rtos/mutex.c **** 	OS_MutexError_E err = OS_MUTEX_ERROR_NONE;
+ 520              		.loc 1 229 2 view .LVU155
+ 230:src/rtos/mutex.c **** 	uint32_t i;
+ 521              		.loc 1 230 2 view .LVU156
+ 231:src/rtos/mutex.c **** 
+ 232:src/rtos/mutex.c **** 	for (i = 0; i < mutex->num_of_pending_tasks; i++) {
+ 522              		.loc 1 232 2 view .LVU157
+ 523              		.loc 1 232 9 is_stmt 0 view .LVU158
+ 524 0000 0023     		movs	r3, #0
+ 525              	.LVL28:
+ 526              		.loc 1 232 14 is_stmt 1 view .LVU159
+ 527              		.loc 1 232 23 is_stmt 0 view .LVU160
+ 528 0002 D0F80821 		ldr	r2, [r0, #264]
+ 529              		.loc 1 232 2 view .LVU161
+ 530 0006 9A42     		cmp	r2, r3
+ 531 0008 17D9     		bls	.L50
+ 228:src/rtos/mutex.c **** 	OS_MutexError_E err = OS_MUTEX_ERROR_NONE;
+ 532              		.loc 1 228 78 view .LVU162
+ 533 000a 10B4     		push	{r4}
+ 534              	.LCFI8:
+ 535              		.cfi_def_cfa_offset 4
+ 536              		.cfi_offset 4, -4
+ 537              	.L42:
+ 233:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+ 538              		.loc 1 233 3 is_stmt 1 discriminator 3 view .LVU163
+ 539              		.loc 1 233 23 is_stmt 0 discriminator 3 view .LVU164
+ 540 000c 9A1C     		adds	r2, r3, #2
+ 541 000e 50F82240 		ldr	r4, [r0, r2, lsl #2]
+ 542              		.loc 1 233 38 discriminator 3 view .LVU165
+ 543 0012 4FF0010C 		mov	ip, #1
+ 544 0016 84F804C0 		strb	ip, [r4, #4]
+ 234:src/rtos/mutex.c **** 		/* so OS_tick won't enable it again */
+ 235:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskTick = 0;
+ 545              		.loc 1 235 3 is_stmt 1 discriminator 3 view .LVU166
+ 546              		.loc 1 235 23 is_stmt 0 discriminator 3 view .LVU167
+ 547 001a 50F82220 		ldr	r2, [r0, r2, lsl #2]
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 16
+
+
+ 548              		.loc 1 235 37 discriminator 3 view .LVU168
+ 549 001e 0024     		movs	r4, #0
+ 550 0020 D460     		str	r4, [r2, #12]
+ 232:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+ 551              		.loc 1 232 47 is_stmt 1 discriminator 3 view .LVU169
+ 232:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+ 552              		.loc 1 232 48 is_stmt 0 discriminator 3 view .LVU170
+ 553 0022 6344     		add	r3, r3, ip
+ 554              	.LVL29:
+ 232:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+ 555              		.loc 1 232 14 is_stmt 1 discriminator 3 view .LVU171
+ 232:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+ 556              		.loc 1 232 23 is_stmt 0 discriminator 3 view .LVU172
+ 557 0024 D0F80821 		ldr	r2, [r0, #264]
+ 232:src/rtos/mutex.c **** 		mutex->pending_tasks[i]->taskState = OS_TASK_STATE_READY;
+ 558              		.loc 1 232 2 discriminator 3 view .LVU173
+ 559 0028 9A42     		cmp	r2, r3
+ 560 002a EFD8     		bhi	.L42
+ 236:src/rtos/mutex.c **** 	}
+ 237:src/rtos/mutex.c **** 
+ 238:src/rtos/mutex.c **** 	mutex->num_of_pending_tasks = 0ul;
+ 561              		.loc 1 238 2 is_stmt 1 view .LVU174
+ 562              		.loc 1 238 30 is_stmt 0 view .LVU175
+ 563 002c 0023     		movs	r3, #0
+ 564              	.LVL30:
+ 565              		.loc 1 238 30 view .LVU176
+ 566 002e C0F80831 		str	r3, [r0, #264]
+ 239:src/rtos/mutex.c **** 
+ 240:src/rtos/mutex.c **** 	if (error != NULL) {
+ 567              		.loc 1 240 2 is_stmt 1 view .LVU177
+ 568              		.loc 1 240 5 is_stmt 0 view .LVU178
+ 569 0032 01B1     		cbz	r1, .L40
+ 241:src/rtos/mutex.c **** 		*error = err;
+ 570              		.loc 1 241 3 is_stmt 1 view .LVU179
+ 571              		.loc 1 241 10 is_stmt 0 view .LVU180
+ 572 0034 0B70     		strb	r3, [r1]
+ 573              	.L40:
+ 242:src/rtos/mutex.c **** 	}
+ 243:src/rtos/mutex.c **** }
+ 574              		.loc 1 243 1 view .LVU181
+ 575 0036 10BC     		pop	{r4}
+ 576              	.LCFI9:
+ 577              		.cfi_restore 4
+ 578              		.cfi_def_cfa_offset 0
+ 579 0038 7047     		bx	lr
+ 580              	.LVL31:
+ 581              	.L50:
+ 238:src/rtos/mutex.c **** 
+ 582              		.loc 1 238 2 is_stmt 1 view .LVU182
+ 238:src/rtos/mutex.c **** 
+ 583              		.loc 1 238 30 is_stmt 0 view .LVU183
+ 584 003a 0023     		movs	r3, #0
+ 238:src/rtos/mutex.c **** 
+ 585              		.loc 1 238 30 view .LVU184
+ 586 003c C0F80831 		str	r3, [r0, #264]
+ 240:src/rtos/mutex.c **** 		*error = err;
+ 587              		.loc 1 240 2 is_stmt 1 view .LVU185
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 17
+
+
+ 240:src/rtos/mutex.c **** 		*error = err;
+ 588              		.loc 1 240 5 is_stmt 0 view .LVU186
+ 589 0040 09B1     		cbz	r1, .L48
+ 241:src/rtos/mutex.c **** 	}
+ 590              		.loc 1 241 3 is_stmt 1 view .LVU187
+ 241:src/rtos/mutex.c **** 	}
+ 591              		.loc 1 241 10 is_stmt 0 view .LVU188
+ 592 0042 0B70     		strb	r3, [r1]
+ 593 0044 7047     		bx	lr
+ 594              	.L48:
+ 241:src/rtos/mutex.c **** 	}
+ 595              		.loc 1 241 10 view .LVU189
+ 596 0046 7047     		bx	lr
+ 597              		.cfi_endproc
+ 598              	.LFE5:
+ 600              		.section	.text.OS_MutexPost,"ax",%progbits
+ 601              		.align	1
+ 602              		.global	OS_MutexPost
+ 603              		.syntax unified
+ 604              		.thumb
+ 605              		.thumb_func
+ 606              		.fpu softvfp
+ 608              	OS_MutexPost:
+ 609              	.LVL32:
+ 610              	.LFB2:
+ 130:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+ 611              		.loc 1 130 60 is_stmt 1 view -0
+ 612              		.cfi_startproc
+ 613              		@ args = 0, pretend = 0, frame = 8
+ 614              		@ frame_needed = 0, uses_anonymous_args = 0
+ 130:src/rtos/mutex.c **** 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+ 615              		.loc 1 130 60 is_stmt 0 view .LVU191
+ 616 0000 10B5     		push	{r4, lr}
+ 617              	.LCFI10:
+ 618              		.cfi_def_cfa_offset 8
+ 619              		.cfi_offset 4, -8
+ 620              		.cfi_offset 14, -4
+ 621 0002 82B0     		sub	sp, sp, #8
+ 622              	.LCFI11:
+ 623              		.cfi_def_cfa_offset 16
+ 624 0004 0C46     		mov	r4, r1
+ 131:src/rtos/mutex.c **** 
+ 625              		.loc 1 131 2 is_stmt 1 view .LVU192
+ 131:src/rtos/mutex.c **** 
+ 626              		.loc 1 131 18 is_stmt 0 view .LVU193
+ 627 0006 0023     		movs	r3, #0
+ 628 0008 8DF80730 		strb	r3, [sp, #7]
+ 133:src/rtos/mutex.c **** 		OS_ENTER_CRITICAL();
+ 629              		.loc 1 133 2 is_stmt 1 view .LVU194
+ 133:src/rtos/mutex.c **** 		OS_ENTER_CRITICAL();
+ 630              		.loc 1 133 5 is_stmt 0 view .LVU195
+ 631 000c 90B3     		cbz	r0, .L52
+ 632 000e 0346     		mov	r3, r0
+ 134:src/rtos/mutex.c **** 
+ 633              		.loc 1 134 3 is_stmt 1 view .LVU196
+ 634              		.syntax unified
+ 635              	@ 134 "src/rtos/mutex.c" 1
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 18
+
+
+ 636 0010 72B6     		CPSID I
+ 637              	@ 0 "" 2
+ 136:src/rtos/mutex.c **** 			/* only the owner of mutex can post mutex */
+ 638              		.loc 1 136 3 view .LVU197
+ 136:src/rtos/mutex.c **** 			/* only the owner of mutex can post mutex */
+ 639              		.loc 1 136 12 is_stmt 0 view .LVU198
+ 640              		.thumb
+ 641              		.syntax unified
+ 642 0012 4268     		ldr	r2, [r0, #4]
+ 136:src/rtos/mutex.c **** 			/* only the owner of mutex can post mutex */
+ 643              		.loc 1 136 6 view .LVU199
+ 644 0014 52B3     		cbz	r2, .L53
+ 138:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_FREE;
+ 645              		.loc 1 138 4 is_stmt 1 view .LVU200
+ 138:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_FREE;
+ 646              		.loc 1 138 21 is_stmt 0 view .LVU201
+ 647 0016 1949     		ldr	r1, .L61
+ 648              	.LVL33:
+ 138:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_FREE;
+ 649              		.loc 1 138 21 view .LVU202
+ 650 0018 0968     		ldr	r1, [r1]
+ 138:src/rtos/mutex.c **** 				mutex->state = OS_MUTEX_STATE_FREE;
+ 651              		.loc 1 138 7 view .LVU203
+ 652 001a 8A42     		cmp	r2, r1
+ 653 001c 09D0     		beq	.L59
+ 155:src/rtos/mutex.c **** 			}
+ 654              		.loc 1 155 5 is_stmt 1 view .LVU204
+ 155:src/rtos/mutex.c **** 			}
+ 655              		.loc 1 155 14 is_stmt 0 view .LVU205
+ 656 001e 0323     		movs	r3, #3
+ 657 0020 8DF80730 		strb	r3, [sp, #7]
+ 658              	.LVL34:
+ 659              	.L56:
+ 165:src/rtos/mutex.c **** 
+ 660              		.loc 1 165 2 is_stmt 1 view .LVU206
+ 661              		.syntax unified
+ 662              	@ 165 "src/rtos/mutex.c" 1
+ 663 0024 62B6     		CPSIE I
+ 664              	@ 0 "" 2
+ 167:src/rtos/mutex.c **** 		*err = errLocal;
+ 665              		.loc 1 167 2 view .LVU207
+ 167:src/rtos/mutex.c **** 		*err = errLocal;
+ 666              		.loc 1 167 5 is_stmt 0 view .LVU208
+ 667              		.thumb
+ 668              		.syntax unified
+ 669 0026 14B1     		cbz	r4, .L51
+ 168:src/rtos/mutex.c **** 	}
+ 670              		.loc 1 168 3 is_stmt 1 view .LVU209
+ 168:src/rtos/mutex.c **** 	}
+ 671              		.loc 1 168 8 is_stmt 0 view .LVU210
+ 672 0028 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 673 002c 2370     		strb	r3, [r4]
+ 674              	.L51:
+ 170:src/rtos/mutex.c **** 
+ 675              		.loc 1 170 1 view .LVU211
+ 676 002e 02B0     		add	sp, sp, #8
+ 677              	.LCFI12:
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 19
+
+
+ 678              		.cfi_remember_state
+ 679              		.cfi_def_cfa_offset 8
+ 680              		@ sp needed
+ 681 0030 10BD     		pop	{r4, pc}
+ 682              	.LVL35:
+ 683              	.L59:
+ 684              	.LCFI13:
+ 685              		.cfi_restore_state
+ 139:src/rtos/mutex.c **** 				if (mutex->isPrioInversion == TRUE) {
+ 686              		.loc 1 139 5 is_stmt 1 view .LVU212
+ 139:src/rtos/mutex.c **** 				if (mutex->isPrioInversion == TRUE) {
+ 687              		.loc 1 139 18 is_stmt 0 view .LVU213
+ 688 0032 0021     		movs	r1, #0
+ 689 0034 0170     		strb	r1, [r0]
+ 140:src/rtos/mutex.c **** 					mutex->isPrioInversion = FALSE;
+ 690              		.loc 1 140 5 is_stmt 1 view .LVU214
+ 140:src/rtos/mutex.c **** 					mutex->isPrioInversion = FALSE;
+ 691              		.loc 1 140 14 is_stmt 0 view .LVU215
+ 692 0036 D0F81811 		ldr	r1, [r0, #280]
+ 140:src/rtos/mutex.c **** 					mutex->isPrioInversion = FALSE;
+ 693              		.loc 1 140 8 view .LVU216
+ 694 003a 0129     		cmp	r1, #1
+ 695 003c 0FD0     		beq	.L60
+ 696              	.L55:
+ 145:src/rtos/mutex.c **** 				MutexTCBPendingListRemoveAll(mutex, &errLocal);
+ 697              		.loc 1 145 5 is_stmt 1 view .LVU217
+ 145:src/rtos/mutex.c **** 				MutexTCBPendingListRemoveAll(mutex, &errLocal);
+ 698              		.loc 1 145 18 is_stmt 0 view .LVU218
+ 699 003e 0022     		movs	r2, #0
+ 700 0040 5A60     		str	r2, [r3, #4]
+ 146:src/rtos/mutex.c **** 
+ 701              		.loc 1 146 5 is_stmt 1 view .LVU219
+ 702 0042 0DF10701 		add	r1, sp, #7
+ 703 0046 1846     		mov	r0, r3
+ 704              	.LVL36:
+ 146:src/rtos/mutex.c **** 
+ 705              		.loc 1 146 5 is_stmt 0 view .LVU220
+ 706 0048 FFF7FEFF 		bl	MutexTCBPendingListRemoveAll
+ 707              	.LVL37:
+ 148:src/rtos/mutex.c **** 					OS_EXIT_CRITICAL();
+ 708              		.loc 1 148 5 is_stmt 1 view .LVU221
+ 148:src/rtos/mutex.c **** 					OS_EXIT_CRITICAL();
+ 709              		.loc 1 148 18 is_stmt 0 view .LVU222
+ 710 004c 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 148:src/rtos/mutex.c **** 					OS_EXIT_CRITICAL();
+ 711              		.loc 1 148 8 view .LVU223
+ 712 0050 002B     		cmp	r3, #0
+ 713 0052 E7D1     		bne	.L56
+ 149:src/rtos/mutex.c **** 					OS_Schedule();
+ 714              		.loc 1 149 6 is_stmt 1 view .LVU224
+ 715              		.syntax unified
+ 716              	@ 149 "src/rtos/mutex.c" 1
+ 717 0054 62B6     		CPSIE I
+ 718              	@ 0 "" 2
+ 150:src/rtos/mutex.c **** 					OS_ENTER_CRITICAL();
+ 719              		.loc 1 150 6 view .LVU225
+ 720              		.thumb
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 20
+
+
+ 721              		.syntax unified
+ 722 0056 FFF7FEFF 		bl	OS_Schedule
+ 723              	.LVL38:
+ 151:src/rtos/mutex.c **** 				}
+ 724              		.loc 1 151 6 view .LVU226
+ 725              		.syntax unified
+ 726              	@ 151 "src/rtos/mutex.c" 1
+ 727 005a 72B6     		CPSID I
+ 728              	@ 0 "" 2
+ 729              		.thumb
+ 730              		.syntax unified
+ 731 005c E2E7     		b	.L56
+ 732              	.LVL39:
+ 733              	.L60:
+ 141:src/rtos/mutex.c **** 					mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
+ 734              		.loc 1 141 6 view .LVU227
+ 141:src/rtos/mutex.c **** 					mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
+ 735              		.loc 1 141 29 is_stmt 0 view .LVU228
+ 736 005e 0021     		movs	r1, #0
+ 737 0060 C0F81811 		str	r1, [r0, #280]
+ 142:src/rtos/mutex.c **** 				}
+ 738              		.loc 1 142 6 is_stmt 1 view .LVU229
+ 142:src/rtos/mutex.c **** 				}
+ 739              		.loc 1 142 40 is_stmt 0 view .LVU230
+ 740 0064 D0F81411 		ldr	r1, [r0, #276]
+ 142:src/rtos/mutex.c **** 				}
+ 741              		.loc 1 142 33 view .LVU231
+ 742 0068 9160     		str	r1, [r2, #8]
+ 743 006a E8E7     		b	.L55
+ 744              	.LVL40:
+ 745              	.L53:
+ 158:src/rtos/mutex.c **** 		}
+ 746              		.loc 1 158 4 is_stmt 1 view .LVU232
+ 158:src/rtos/mutex.c **** 		}
+ 747              		.loc 1 158 13 is_stmt 0 view .LVU233
+ 748 006c 0123     		movs	r3, #1
+ 749 006e 8DF80730 		strb	r3, [sp, #7]
+ 750 0072 D7E7     		b	.L56
+ 751              	.L52:
+ 162:src/rtos/mutex.c **** 	}
+ 752              		.loc 1 162 3 is_stmt 1 view .LVU234
+ 162:src/rtos/mutex.c **** 	}
+ 753              		.loc 1 162 12 is_stmt 0 view .LVU235
+ 754 0074 0123     		movs	r3, #1
+ 755 0076 8DF80730 		strb	r3, [sp, #7]
+ 756 007a D3E7     		b	.L56
+ 757              	.L62:
+ 758              		.align	2
+ 759              	.L61:
+ 760 007c 00000000 		.word	OS_TCBCurrent
+ 761              		.cfi_endproc
+ 762              	.LFE2:
+ 764              		.text
+ 765              	.Letext0:
+ 766              		.file 2 "c:\\eclipse\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\\machine\\_defaul
+ 767              		.file 3 "c:\\eclipse\\gcc-arm-none-eabi-10-2020-q4-major\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 768              		.file 4 "src/rtos/os_forward.h"
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 21
+
+
+ 769              		.file 5 "src/rtos/os.h"
+ 770              		.file 6 "src/rtos/mutex_forward.h"
+ 771              		.file 7 "src/rtos/mutex.h"
+ARM GAS  C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s 			page 22
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 mutex.c
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:16     .text.OS_MutexInit:00000000 $t
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:24     .text.OS_MutexInit:00000000 OS_MutexInit
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:116    .text.MutexTCBPendingListAdd:00000000 $t
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:123    .text.MutexTCBPendingListAdd:00000000 MutexTCBPendingListAdd
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:174    .text.MutexTCBPendingListRemove:00000000 $t
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:181    .text.MutexTCBPendingListRemove:00000000 MutexTCBPendingListRemove
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:286    .text.OS_MutexPend:00000000 $t
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:293    .text.OS_MutexPend:00000000 OS_MutexPend
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:500    .text.OS_MutexPend:000000c0 $d
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:505    .text.MutexTCBPendingListRemoveAll:00000000 $t
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:512    .text.MutexTCBPendingListRemoveAll:00000000 MutexTCBPendingListRemoveAll
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:601    .text.OS_MutexPost:00000000 $t
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:608    .text.OS_MutexPost:00000000 OS_MutexPost
+C:\Users\Ivan\AppData\Local\Temp\cc9AyKqk.s:760    .text.OS_MutexPost:0000007c $d
+
+UNDEFINED SYMBOLS
+OS_delayTicks
+OS_Schedule
+OS_TCBCurrent
