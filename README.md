@@ -52,3 +52,9 @@ Next, follow the steps below:
 11. Open your favorite terminal and run GNU Make by executing `make` command. The project should build and the .hex, .bin, and .elf files should be located in the `build` directory.
 12. Connect Bluepill board with ST-Link and connect ST-Link with the PC.
 12. Go into the Run taskbar in VS Code (or press `Ctrl + Shift + D`) and press the green play button to run debug. The program should stop at the `main` function and you can now debug it.
+
+## Contributing
+Please look into Issues. Also if you need futher info or guidance, please do not hesitate to contact me at `vnucec.ivan@gmail.com`.
+
+## Licence
+MIT Licence
