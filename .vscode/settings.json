@@ -1,4 +1,4 @@
 {
-    "cortex-debug.armToolchainPath": "C:\\eclipse\\gcc-arm-none-eabi-10-2020-q4-major\\bin\\",
-    "cortex-debug.openocdPath": "C:\\eclipse\\xpack-openocd-0.10.0-15\\bin\\openocd.exe"
+    "cortex-debug.armToolchainPath": "C:/eclipse/gcc-arm-none-eabi-10-2020-q4-major/bin/",
+    "cortex-debug.openocdPath": "C:/eclipse/xpack-openocd-0.10.0-15/bin/openocd.exe"
 }
