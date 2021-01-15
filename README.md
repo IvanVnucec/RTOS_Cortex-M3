@@ -19,7 +19,7 @@ To do:
 - etc.
   
 ## Building from source
-The RTOS is developed on a so-called "Bluepill" board with an STM32F103C8T6 microcontroller. Also, this is being developed on Windows OS.   
+The RTOS is developed on a so-called "Bluepill" board with an STM32F103C8T6 microcontroller. Also, we are using Windows OS.   
 If you have some other microcontroller, you will need to change a few things (I will explain what you need to change if you have a different setup). 
   
 The project is using:
