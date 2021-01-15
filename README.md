@@ -1,10 +1,33 @@
 # Cortex-M3 RTOS
- - Cortex-M3 RTOS, preemptive, priority-based, statically linked
+- preemptive, 
+- priority-based, 
+- statically linked.
 
-## Description 
-
+## Description
+Cortex-M3 RTOS project with preemtive and priority-based scheduler, delay functions, mutexes and many more functionalities.  
+RTOS project files are located under `src/rtos` folder.
+  
+Implemented:
+- preempting and priority-based scheduler, 
+- delay functions, 
+- mutexes.
+  
+To do:
+- semaphores,
+- queues,
+- messages, 
+- etc.
+  
 ## Building from source
-The easiest way to building the project and running it is with VS Code as an IDE, GNU Make as a builder, arm-none-eabi toolchain for the GCC and the GDB, ST-Link as debugging probe, and OpenOCD as a program flasher. The RTOS is developed on a so-called "Bluepill" board with an STM32F103C8T6 microcontroller. Also, this is being developed on Windows OS. If you have some other microcontroller, you will need to change a few things (I will explain what you need to change if you have a different setup).  
+The RTOS is developed on a so-called "Bluepill" board with an STM32F103C8T6 microcontroller. Also, this is being developed on Windows OS.   
+If you have some other microcontroller, you will need to change a few things (I will explain what you need to change if you have a different setup). 
+  
+The project is using:
+- VS Code as an IDE, 
+- GNU Make as a builder,
+- arm-none-eabi toolchain for the GCC and the GDB, 
+- ST-Link as debugging probe, 
+- and OpenOCD as a program flasher.   
   
 First and foremost, we consider that the user already installed the following programs:  
 1. VS Code
