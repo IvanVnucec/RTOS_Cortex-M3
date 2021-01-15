@@ -4,6 +4,7 @@
 #include "Trace.h"
 #include "stm32f1xx.h"
 
+#include "bsp_led.h"
 #include "os.h"
 #include "mutex.h"
 
@@ -61,6 +62,9 @@ int main(void) {
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock/1000ul);
 	__enable_irq();
+
+	BSP_LED_Init();
+	BSP_LED_On();
 
 	/* Start OS */
 	OS_Init(NULL);
@@ -175,14 +179,10 @@ static void task3(void) {
 
 
 static void task4(void) {
-    RCC->APB2ENR    |= RCC_APB2ENR_IOPCEN;                      // enable clock
-    GPIOC->CRH      &=  ~(GPIO_CRH_MODE13 | GPIO_CRH_CNF13);    // reset PC13
-    GPIOC->CRH      |= (GPIO_CRH_MODE13_1 | GPIO_CRH_MODE13_0); // config PC13
-
 	while(4) {
-	    GPIOC->BSRR = GPIO_BSRR_BS13;   // led on - active low
+	    BSP_LED_On();
         OS_delayTime(0, 0, 0, 0, 500);
-        GPIOC->BSRR = GPIO_BSRR_BR13;   // led on - active low
+        BSP_LED_Off();
         OS_delayTime(0, 0, 0, 0, 500);
 	}
 }

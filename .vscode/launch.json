@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "cwd": "${workspaceRoot}",
+            "executable": "C:/Users/Ivan/Desktop/rtos/build/rtos.elf",
+            "name": "Debug Microcontroller",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "configFiles": [
+                "C:/eclipse/xpack-openocd-0.10.0-15/scripts/interface/stlink-v2.cfg",
+                "C:/eclipse/xpack-openocd-0.10.0-15/scripts/target/stm32f1x.cfg"
+            ],
+            "svdFile": "C:/Users/Ivan/Desktop/rtos/STM32F103.svd",
+            "runToMain": true
+        }
+    ]
+}

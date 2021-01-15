@@ -32,7 +32,8 @@ src/main.c \
 src/stm32f1xx_it.c \
 src/system_stm32f1xx.c \
 src/rtos/mutex.c \
-src/rtos/os.c
+src/rtos/os.c \
+src/bsp/bsp_led.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -91,6 +92,7 @@ AS_INCLUDES =
 C_INCLUDES =  \
 -Isrc \
 -Isrc/rtos \
+-Isrc/bsp \
 -Idrv/CMSIS/Device/ST/STM32F1xx/Include \
 -Idrv/CMSIS/Include
 
