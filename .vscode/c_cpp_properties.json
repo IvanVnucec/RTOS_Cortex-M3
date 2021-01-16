@@ -3,22 +3,21 @@
         {
             "name": "arm",
             "includePath": [
+                "src",
+                "src/rtos",
+                "src/bsp",
                 "drv/CMSIS/Device/ST/STM32F1xx/Include",
-                "drv/CMSIS/Include",
-                "./src",
-                "./src/rtos",
-                "./src/bsp"
+                "drv/CMSIS/Include"
             ],
             "compilerPath": "C:/eclipse/gcc-arm-none-eabi-10-2020-q4-major/bin/arm-none-eabi-gcc.exe",
             "defines": [
-                "_DEBUG",
-                "UNICODE",
-                "_UNICODE",
                 "STM32F103xB"
             ],
             "intelliSenseMode": "gcc-arm",
             "compilerArgs": [
-                "-Wall"
+                "-Wall",
+                "-fdata-sections",
+                "-ffunction-sections"
             ],
             "cStandard": "c99"
         }
