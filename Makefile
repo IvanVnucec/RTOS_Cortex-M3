@@ -22,6 +22,8 @@ OPT = -Og
 #######################################
 # Build path
 BUILD_DIR = build
+LINK_DIR = linker
+BOOT_DIR = boot
 
 ######################################
 # source
@@ -38,7 +40,7 @@ src/bsp/bsp_led.c
 # ASM sources
 ASM_SOURCES =  \
 src/rtos/os_cpu.s \
-startup_stm32f103xb.s
+$(BOOT_DIR)/startup_stm32f103xb.s
 
 
 #######################################
@@ -115,7 +117,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F103C8Tx_FLASH.ld
+LDSCRIPT = $(LINK_DIR)/STM32F103C8Tx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys 
