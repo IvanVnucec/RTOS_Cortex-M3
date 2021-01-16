@@ -46,13 +46,13 @@ Next, follow the steps below:
 5. Under `"compilerPath"` set path to point to `arm-none-eabi-gcc.exe` executable.
 6. Open `.vscode/launch.json` file
 7. Under `"configFiles"` set paths to point to `stlink-v2.cfg` and `stm32f1x.cfg` files. They should be in the OpenOCD installation directory under `scripts/interface` and `scripts/target` folders respectively.
-7. Under `"armToolchainPath"` set paths to point to `bin` folder of the amr-none-eabi toolchain.
-8. Open `.vscode/settings.json` file
-9. Under `"cortex-debug.armToolchainPath"` provide a path to the bin directory of gcc-arm-none-eabi toolchain.
-10. Under `"cortex-debug.openocdPath"` provide path to `openocd.exe` executable.
-11. Open your favorite terminal and run GNU Make by executing `make` command. The project should build and the .hex, .bin, and .elf files should be located in the `build` directory.
-12. Connect Bluepill board with ST-Link and connect ST-Link with the PC.
-12. Go into the Run taskbar in VS Code (or press `Ctrl + Shift + D`) and press the green play button to run debug. The program should stop at the `main` function and you can now debug it.
+8. Under `"armToolchainPath"` set paths to point to `bin` folder of the amr-none-eabi toolchain.
+9. Open `.vscode/settings.json` file
+10. Under `"cortex-debug.armToolchainPath"` provide a path to the bin directory of gcc-arm-none-eabi toolchain.
+11. Under `"cortex-debug.openocdPath"` provide path to `openocd.exe` executable.
+12. Open your favorite terminal and run GNU Make by executing `make` command. The project should build and the .hex, .bin, and .elf files should be located in the `build` directory.
+13. Connect Bluepill board with ST-Link and connect ST-Link with the PC.
+14. Go into the Run taskbar in VS Code (or press `Ctrl + Shift + D`) and press the green play button to run debug. The program should stop at the `main` function and you can now debug it.
 
 ## Contributing
 Please look into Issues. Also if you need futher info or guidance, please do not hesitate to contact me at `vnucec.ivan@gmail.com`.
