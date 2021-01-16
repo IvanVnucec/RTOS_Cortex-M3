@@ -60,7 +60,6 @@ int main(void) {
 	/* Configure SysTick clock to generate tick every 1 ms */
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock/1000ul);
-	__enable_irq();
 
 	BSP_LED_Init();
 	BSP_LED_On();
@@ -93,6 +92,9 @@ int main(void) {
 		NULL);
 
 	OS_MutexInit(&mutex1, 0, NULL);
+
+	/* enable global interurpts */
+	__enable_irq();
 
 	OS_EnableScheduler(NULL);
 
