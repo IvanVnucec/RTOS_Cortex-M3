@@ -74,18 +74,12 @@ void OS_EnableScheduler(OS_Error_E *err);
 void OS_DisableScheduler(OS_Error_E *err);
 uint32_t OS_getOSTickCounter(void);
 void OS_delayTicks(uint32_t ticks);
-void OS_delayTime(uint32_t days,
-		uint32_t hours,
-		uint32_t minutes,
-		uint32_t seconds,
-		uint32_t miliseconds);
+void OS_delayTime(uint32_t hours, uint32_t minutes, uint32_t seconds, uint32_t miliseconds);
 void OS_TaskTerminate(void);
 void OS_TickHandler(void);
 
 void PendSV_Handler(void);
 void SysTick_Handler(void);
-
-
 
 
 #endif /* #ifndef OS_H */

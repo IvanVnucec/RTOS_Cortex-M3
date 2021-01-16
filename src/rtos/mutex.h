@@ -5,13 +5,15 @@
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
+#include "os.h"
 #include "os_forward.h"
 #include "mutex_forward.h"
+
 
 /*******************************************************************************************************
  *                         CONSTANTS
  ******************************************************************************************************/
-#define OS_MUTEX_PENDING_TASKS_ARRAY_SIZE 64u /* this should be equal to OS_TCB_LIST_LENGTH */
+#define OS_MUTEX_PENDING_TASKS_ARRAY_SIZE OS_TCB_LIST_LENGTH
 
 
 /*******************************************************************************************************
@@ -26,7 +28,7 @@ enum OS_MutexState_ENUM {
 struct OS_Mutex_STRUCT {
 	OS_MutexState_E state;
 	OS_TCB_S *owner;
-	OS_TCB_S *pending_tasks[64];
+	OS_TCB_S *pending_tasks[OS_MUTEX_PENDING_TASKS_ARRAY_SIZE];
 	uint32_t num_of_pending_tasks;
 	uint32_t isInitialized;
 	uint32_t prioInversion;

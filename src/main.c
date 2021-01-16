@@ -180,9 +180,9 @@ static void task3(void) {
 static void task4(void) {
 	while(4) {
 	    BSP_LED_On();
-        OS_delayTime(0, 0, 0, 0, 500);
+        OS_delayTime(0, 0, 0, 500);
         BSP_LED_Off();
-        OS_delayTime(0, 0, 0, 0, 500);
+        OS_delayTime(0, 0, 0, 500);
 	}
 }
 
