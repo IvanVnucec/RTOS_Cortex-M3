@@ -46,6 +46,7 @@ Next, follow the steps below:
 5. Under `"compilerPath"` set path to point to `arm-none-eabi-gcc.exe` executable.
 6. Open `.vscode/launch.json` file
 7. Under `"configFiles"` set paths to point to `stlink-v2.cfg` and `stm32f1x.cfg` files. They should be in the OpenOCD installation directory under `scripts/interface` and `scripts/target` folders respectively.
+7. Under `"armToolchainPath"` set paths to point to `bin` folder of the amr-none-eabi toolchain.
 8. Open `.vscode/settings.json` file
 9. Under `"cortex-debug.armToolchainPath"` provide a path to the bin directory of gcc-arm-none-eabi toolchain.
 10. Under `"cortex-debug.openocdPath"` provide path to `openocd.exe` executable.

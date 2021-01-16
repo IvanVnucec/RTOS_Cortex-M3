@@ -2,18 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "cwd": "${workspaceRoot}",
-            "executable": "./build/rtos.elf",
             "name": "Debug Microcontroller",
-            "request": "launch",
             "type": "cortex-debug",
+            "request": "launch",
+            "executable": "${workspaceFolder}/build/rtos.elf",
+            "runToMain": true,
+            "cwd": "${workspaceFolder}",
             "servertype": "openocd",
             "configFiles": [
                 "C:/eclipse/xpack-openocd-0.10.0-15/scripts/interface/stlink-v2.cfg",
                 "C:/eclipse/xpack-openocd-0.10.0-15/scripts/target/stm32f1x.cfg"
             ],
-            "svdFile": "./boot/STM32F103.svd",
-            "runToMain": true
+            "svdFile": "${workspaceFolder}/boot/STM32F103.svd",
+            "armToolchainPath": "C:/eclipse/gcc-arm-none-eabi-10-2020-q4-major/bin/"
         }
     ]
 }
