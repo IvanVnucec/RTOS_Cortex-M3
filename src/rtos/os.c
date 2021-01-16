@@ -169,7 +169,7 @@ void OS_Schedule(void) {
         /* assumption: Idle taks is first in TCB linked list */
         i = OS_TCBListHead->TCBNext;
 		while (i != NULL) {
-			if ((i->taskState == OS_TASK_STATE_READY) && (i->taskPriority < maxPriorityTask->taskPriority)) {
+			if ((i->taskState == OS_TASK_STATE_READY) && (i->taskPriority > maxPriorityTask->taskPriority)) {
 				maxPriorityTask = i;
 			}
 

@@ -136,7 +136,7 @@ static void task2(void) {
 
 	OS_TaskCreate(&task3TCB,
 			task3,
-			0ul,
+			3ul,
 			(uint8_t *)"task3",
 			task3Stack,
 			256ul,
