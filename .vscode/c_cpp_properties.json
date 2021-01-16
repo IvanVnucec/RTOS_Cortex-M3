@@ -17,7 +17,9 @@
             "compilerArgs": [
                 "-Wall",
                 "-fdata-sections",
-                "-ffunction-sections"
+                "-ffunction-sections",
+                "-g",
+                "-gdwarf-2"
             ],
             "cStandard": "c99"
         }
