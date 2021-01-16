@@ -2,18 +2,29 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Microcontroller",
             "type": "cortex-debug",
             "request": "launch",
-            "executable": "${workspaceFolder}/build/rtos.elf",
-            "runToMain": true,
-            "cwd": "${workspaceFolder}",
+            "name": "Debug (OpenOCD)",
             "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build",
+            "runToMain": true,
+            "executable": "${workspaceFolder}/build/rtos.elf",
+            "device": "STM32F103C8T6",
             "configFiles": [
-                "C:/eclipse/xpack-openocd-0.10.0-15/scripts/interface/stlink-v2.cfg",
-                "C:/eclipse/xpack-openocd-0.10.0-15/scripts/target/stm32f1x.cfg"
+                "interface/stlink.cfg",
+                "target/stm32f1x.cfg"
             ],
             "svdFile": "${workspaceFolder}/boot/STM32F103.svd",
+            "swoConfig": {
+                "enabled": true,
+                "cpuFrequency": 8000000,
+                "swoFrequency": 2000000,
+                "source": "probe",
+                "decoders": [
+                    { "type": "console", "label": "ITM", "port": 0 }
+                ]
+            },
             "armToolchainPath": "C:/eclipse/gcc-arm-none-eabi-10-2020-q4-major/bin/"
         }
     ]
