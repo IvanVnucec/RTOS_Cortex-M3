@@ -16,7 +16,11 @@
                 "_UNICODE",
                 "STM32F103xB"
             ],
-            "intelliSenseMode": "gcc-arm"
+            "intelliSenseMode": "gcc-arm",
+            "compilerArgs": [
+                "-Wall"
+            ],
+            "cStandard": "c99"
         }
     ],
     "version": 4
