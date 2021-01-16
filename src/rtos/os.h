@@ -48,7 +48,7 @@ struct OS_TCB_STRUCT {
     uint32_t taskTick;
     uint8_t *taskName;
     OS_Mutex_S *mutex;
-    uint32_t mutexTimeout;
+    OS_TCB_S *TCBNext;
 };
 
 
