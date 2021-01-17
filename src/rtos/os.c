@@ -120,6 +120,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     taskTCB->taskTick = 0ul;
     taskTCB->taskName = taskName;
     taskTCB->TCBNext = NULL;
+    taskTCB->mutexPendingNext = NULL;
 
     /* skip if no items in linked list */
     if (OS_TCBListHead != NULL) {
@@ -176,8 +177,8 @@ void OS_Schedule(void) {
             i = i->TCBNext;
 		}
 
-        maxPriorityTask->taskState = OS_TASK_STATE_RUNNING;
 		OS_TCBNext = maxPriorityTask;
+        OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
 
 		OS_EXIT_CRITICAL();
 

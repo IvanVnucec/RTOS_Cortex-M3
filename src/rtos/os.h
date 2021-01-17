@@ -49,6 +49,7 @@ struct OS_TCB_STRUCT {
     uint8_t *taskName;
     OS_Mutex_S *mutex;
     OS_TCB_S *TCBNext;
+    OS_TCB_S *mutexPendingNext;
 };
 
 
