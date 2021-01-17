@@ -28,8 +28,7 @@ enum OS_MutexState_ENUM {
 struct OS_Mutex_STRUCT {
 	OS_MutexState_E state;
 	OS_TCB_S *owner;
-	OS_TCB_S *pending_tasks[OS_MUTEX_PENDING_TASKS_ARRAY_SIZE];
-	uint32_t num_of_pending_tasks;
+	uint32_t num_of_pending_tasks;	/* TODO: Do we need this variable? IvanVnucec */
 	uint32_t isInitialized;
 	uint32_t prioInversion;
 	uint32_t oldOwnerTaskPriority;

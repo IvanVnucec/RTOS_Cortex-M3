@@ -60,7 +60,6 @@ int main(void) {
 	/* Configure SysTick clock to generate tick every 1 ms */
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock/1000ul);
-	__enable_irq();
 
 	BSP_LED_Init();
 	BSP_LED_On();
@@ -84,6 +83,14 @@ int main(void) {
 			256ul,
 			NULL);
 
+	OS_TaskCreate(&task3TCB,
+			task3,
+			3ul,
+			(uint8_t *)"task3",
+			task3Stack,
+			256ul,
+			NULL);
+
 	OS_TaskCreate(&task4TCB,
 		task4,
 		4ul,
@@ -92,7 +99,10 @@ int main(void) {
 		256ul,
 		NULL);
 
-	OS_MutexInit(&mutex1, 0, NULL);
+	OS_MutexInit(&mutex1, 5, NULL);
+
+	/* enable global interurpts */
+	__enable_irq();
 
 	OS_EnableScheduler(NULL);
 
@@ -107,82 +117,57 @@ int main(void) {
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
 static void task1(void) {
-	uint32_t t1 = 0ul;
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
-	OS_delayTicks(2);
 	while(1) {
-		t1++;
-
-		OS_MutexPend(&mutex1, 0, &errLocal);
+		OS_MutexPend(&mutex1, 20, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
-
-			//trace_printf("%d\n", cnt);
+			OS_delayTicks(20);
 			OS_MutexPost(&mutex1, NULL);
-			OS_delayTicks(1ul);
 
 		} else {
-			//trace_puts("mutex timeout task1");
+			
 		}
 	}
 }
 
 
 static void task2(void) {
-	uint32_t t2 = 0ul;
-	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;	
 
-	OS_TaskCreate(&task3TCB,
-			task3,
-			0ul,
-			(uint8_t *)"task3",
-			task3Stack,
-			256ul,
-			NULL);
-
-	OS_delayTicks(2);
 	while(2) {
-		t2++;
-
-		OS_MutexPend(&mutex1, 10, &errLocal);
+		OS_MutexPend(&mutex1, 20, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
-
-			cnt++;
 			OS_delayTicks(20);
 			OS_MutexPost(&mutex1, NULL);
 
 		} else {
-			//trace_puts("mutex timeout task2");
+
 		}
 	}
 }
 
 
 static void task3(void) {
-	uint32_t t3 = 0ul;
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
-	while(3) {
-		t3++;
+	OS_MutexPend(&mutex1, 1ul, &errLocal);
+	if (errLocal == OS_MUTEX_ERROR_NONE) {
+		OS_delayTicks(20ul);
+		OS_MutexPost(&mutex1, NULL);
 
-		OS_MutexPend(&mutex1, 0, &errLocal);
-		if (errLocal == OS_MUTEX_ERROR_NONE) {
-			OS_delayTicks(20);
-			OS_MutexPost(&mutex1, NULL);
-
-		} else {
-			//trace_puts("mutex timeout task3");
-		}
+	} else {
+		
 	}
 }
 
 
 static void task4(void) {
 	while(4) {
-	    BSP_LED_On();
-        OS_delayTime(0, 0, 0, 500);
-        BSP_LED_Off();
-        OS_delayTime(0, 0, 0, 500);
+	    BSP_LED_Off();
+        OS_delayTicks(OS_MS_TO_TICKS(500ul));
+        BSP_LED_On();
+        OS_delayTicks(OS_MS_TO_TICKS(500ul));
 	}
 }
 

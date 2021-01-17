@@ -28,18 +28,14 @@
  ******************************************************************************************************/
 uint32_t OS_tickCounter;
 
-OS_TCB_S *OS_TCBList[OS_TCB_LIST_LENGTH];
+OS_TCB_S *OS_TCBListHead;
 uint32_t OS_TCBItemsInList;
-uint32_t OS_TCBCurrentIndex;
-uint32_t OS_TCBNextIndex;
 OS_TCB_S *OS_TCBCurrent;
 OS_TCB_S *OS_TCBNext;
 
-
-OS_TCB_S taskIdleTCB;
-uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
-
-uint32_t OS_schedEnabled;
+static OS_TCB_S taskIdleTCB;
+static uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
+static uint32_t OS_schedEnabled;
 
 
 /*******************************************************************************************************
@@ -65,6 +61,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 				OS_Error_E *err) {
 
 	OS_Error_E errLocal = OS_ERROR_NONE;
+    OS_TCB_S *i;
 
     OS_ENTER_CRITICAL();
 
@@ -122,16 +119,24 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     taskTCB->taskPriority = taskPriority;
     taskTCB->taskTick = 0ul;
     taskTCB->taskName = taskName;
+    taskTCB->TCBNext = NULL;
+    taskTCB->mutexPendingNext = NULL;
 
-    /* if there is no room in OS_TCBList */
-    if (OS_TCBItemsInList >= OS_TCB_LIST_LENGTH) {
-        errLocal = OS_ERROR_TASK_NOT_CREATED;
+    /* skip if no items in linked list */
+    if (OS_TCBListHead != NULL) {
+        i = OS_TCBListHead;
+
+        while (i->TCBNext != NULL) {
+            i = i->TCBNext;
+        }
+
+        i->TCBNext = taskTCB;
+
+    } else {
+        OS_TCBListHead = taskTCB;
     }
 
-    if (errLocal == OS_ERROR_NONE) {
-    	OS_TCBList[OS_TCBItemsInList] = taskTCB;
-    	OS_TCBItemsInList++;
-    }
+    OS_TCBItemsInList++;
 
     OS_EXIT_CRITICAL();
 
@@ -146,31 +151,34 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 
 
 void OS_Schedule(void) {
-    uint32_t i;
-    uint32_t taskMaxPriorityIndex;
-
-    taskMaxPriorityIndex = 0ul;
+    OS_TCB_S *maxPriorityTask;
+    OS_TCB_S *i;
 
 	OS_ENTER_CRITICAL();
 
 	if (OS_schedEnabled == TRUE) {
 		/* If the current task was still running then set it to ready state */
-		if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
-			OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
-		}
+        /* this must be checked because OS_TCBCurrent can be NULL */
+        if (OS_TCBCurrent != NULL) {
+            if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
+                OS_TCBCurrent->taskState = OS_TASK_STATE_READY;
+            }
+        }
 
-		for (i = 0ul; i < OS_TCBItemsInList; i++) {
-			/* choose a thread to run next based on threads priority*/
-			if (OS_TCBList[i]->taskState == OS_TASK_STATE_READY &&
-				OS_TCBList[i]->taskPriority < OS_TCBList[taskMaxPriorityIndex]->taskPriority) {
-				taskMaxPriorityIndex = i;
+        /* choose a thread to run next based on threads priority*/
+        maxPriorityTask = &taskIdleTCB;
+        /* assumption: Idle taks is first in TCB linked list */
+        i = OS_TCBListHead->TCBNext;
+		while (i != NULL) {
+			if ((i->taskState == OS_TASK_STATE_READY) && (i->taskPriority > maxPriorityTask->taskPriority)) {
+				maxPriorityTask = i;
 			}
+
+            i = i->TCBNext;
 		}
 
-		OS_TCBNextIndex = taskMaxPriorityIndex;
-
-		OS_TCBNext = OS_TCBList[OS_TCBNextIndex];
-		OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
+		OS_TCBNext = maxPriorityTask;
+        OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
 
 		OS_EXIT_CRITICAL();
 
@@ -188,8 +196,8 @@ void OS_Init(OS_Error_E *err) {
 	OS_schedEnabled = FALSE;
 
     OS_TCBItemsInList = 0ul;
-    OS_TCBCurrentIndex = 0ul;
-    OS_TCBNextIndex = 0ul;
+    OS_TCBListHead = NULL;
+    OS_TCBCurrent = NULL;
 
     OS_TaskCreate(&taskIdleTCB, 
               &OS_TaskIdle, 
@@ -198,11 +206,6 @@ void OS_Init(OS_Error_E *err) {
               taskIdleStack, 
               SIZEOF_TASKIDLESTACK,
 			  &errLocal);
-
-    if (errLocal == OS_ERROR_NONE) {
-    	OS_TCBCurrent = (OS_TCB_S *)0;
-    	OS_TCBNext = &taskIdleTCB;
-    }
 
     if (err != NULL) {
     	*err = errLocal;
@@ -279,20 +282,24 @@ void OS_TaskTerminate(void) {
 
 
 void OS_TickHandler(void) {
-	uint32_t i;
+	OS_TCB_S *i;
 
 	OS_ENTER_CRITICAL();
 
     OS_tickCounter++;
 
-    for(i = 0ul; i < OS_TCBItemsInList; i++) {
-      if (OS_TCBList[i]->taskTick > 0ul) {
-        OS_TCBList[i]->taskTick--;
+    /* assumption: Idle task is first in TCB list */
+    i = OS_TCBListHead->TCBNext;
+    while(i != NULL)  {
+        if (i->taskTick > 0ul) {
+            i->taskTick--;
 
-        if (OS_TCBList[i]->taskTick == 0u) {
-          OS_TCBList[i]->taskState = OS_TASK_STATE_READY;
+            if (i->taskTick == 0u) {
+                i->taskState = OS_TASK_STATE_READY;
+            }
         }
-      }
+
+        i = i->TCBNext;
     }
 
     OS_EXIT_CRITICAL();

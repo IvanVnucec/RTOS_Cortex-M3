@@ -27,7 +27,7 @@
 #define OS_MS_TO_TICKS(ms)	((ms) * OS_SCHED_FREQ_HZ / 1000ul)
 
 #define OS_TCB_LIST_LENGTH	(64ul)
-#define OS_IDLE_TASK_PRIORITY 	(OS_TCB_LIST_LENGTH - 1ul)
+#define OS_IDLE_TASK_PRIORITY 	(0ul)
 
 
 /*******************************************************************************************************
@@ -48,7 +48,8 @@ struct OS_TCB_STRUCT {
     uint32_t taskTick;
     uint8_t *taskName;
     OS_Mutex_S *mutex;
-    uint32_t mutexTimeout;
+    OS_TCB_S *TCBNext;
+    OS_TCB_S *mutexPendingNext;
 };
 
 
