@@ -28,9 +28,9 @@
 /*******************************************************************************************************
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
-void MutexTCBPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error);
-void MutexTCBPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb, OS_MutexError_E* error);
-void MutexTCBPendingListRemoveAll(OS_Mutex_S *mutex, OS_MutexError_E* error);
+void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb);
+void MutexPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb);
+void MutexPendingListRemoveAll(OS_Mutex_S *mutex);
 
 
 /*******************************************************************************************************
@@ -81,15 +81,8 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 					mutex->isPrioInversion = TRUE;
 				}
 
-				/* add TCB to the pending list */
-				OS_TCB_S *i = mutex->owner->mutexPendingNext;
-				OS_TCB_S *last_i = mutex->owner;
-				while (i != NULL) {
-					last_i = i;
-					i = i->mutexPendingNext;
-				}
-				last_i->mutexPendingNext = OS_TCBCurrent;
-				mutex->num_of_pending_tasks++;
+				/* add TCB to the mutex pending list */
+				MutexPendingListAdd(mutex, OS_TCBCurrent);
 
 				if (timeout > 0ul) {
 					OS_delayTicks(timeout);
@@ -101,21 +94,7 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 
 					} else {
 						/* timeout time is finished, remove TCB from TCB pending list */
-						if (mutex->owner != NULL) {
-							OS_TCB_S *i = mutex->owner->mutexPendingNext;
-							OS_TCB_S *last_i = mutex->owner;
-							while (i != NULL) {
-								if (i == OS_TCBCurrent) {
-									last_i->mutexPendingNext = i->mutexPendingNext;
-									mutex->num_of_pending_tasks--;
-									break;
-								}
-
-								last_i = i;
-								i = i->mutexPendingNext;
-							}
-						}
-						OS_TCBCurrent->mutexPendingNext = NULL;
+						MutexPendingListRemove(mutex, OS_TCBCurrent);
 
 						errLocal = OS_MUTEX_ERROR_TIMEOUT;
 					}
@@ -162,23 +141,9 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 					mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
 				}
 
-				/* remove all TCBs from mutex pedning list */
-				/* TODO: Do we need to set every i->mutexPendingNext to NULL 
-				 * or just set mutex->owner->mutexPendingNext = NULL; IvanVnucec
-				*/
-				OS_TCB_S *i = mutex->owner->mutexPendingNext;
-				OS_TCB_S *j;
-				while (i != NULL) {
-					i->taskState = OS_TASK_STATE_READY;
-					i->taskTick = 0ul;
-					j = i->mutexPendingNext;
-					i->mutexPendingNext = NULL;
-					i = j;
-				}
-				
-				mutex->owner->mutexPendingNext = NULL;
+				/* remove all TCBs from mutex pending list */
+				MutexPendingListRemoveAll(mutex);
 				mutex->owner = NULL;
-				mutex->num_of_pending_tasks = 0ul;
 
 				OS_EXIT_CRITICAL();
 				OS_Schedule();
@@ -206,3 +171,71 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 /******************************************** ***********************************************************
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
+
+void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
+	OS_TCB_S *i;
+	OS_TCB_S *last_i;
+
+	i = mutex->owner->mutexPendingNext;
+	last_i = mutex->owner;
+
+	while (i != NULL) {
+		last_i = i;
+		i = i->mutexPendingNext;
+	}
+	last_i->mutexPendingNext = tcb;
+	mutex->num_of_pending_tasks++;
+
+	return;
+}
+
+
+void MutexPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
+	OS_TCB_S *i;
+	OS_TCB_S *last_i;
+
+	if (mutex->owner != NULL) {
+		i = mutex->owner->mutexPendingNext;
+		last_i = mutex->owner;
+
+		while (i != NULL) {
+			if (i == tcb) {
+				last_i->mutexPendingNext = i->mutexPendingNext;
+				mutex->num_of_pending_tasks--;
+				break;
+			}
+
+			last_i = i;
+			i = i->mutexPendingNext;
+		}
+	}
+
+	tcb->mutexPendingNext = NULL;
+
+	return;
+}
+
+
+void MutexPendingListRemoveAll(OS_Mutex_S *mutex) {
+	OS_TCB_S *i;
+	OS_TCB_S *j;
+
+	i = mutex->owner->mutexPendingNext;
+
+	/* TODO: Do we need to set every i->mutexPendingNext to NULL 
+	* or just set mutex->owner->mutexPendingNext = NULL??? IvanVnucec
+	*/
+
+	while (i != NULL) {
+		i->taskState = OS_TASK_STATE_READY;
+		i->taskTick = 0ul;
+		j = i->mutexPendingNext;
+		i->mutexPendingNext = NULL;
+		i = j;
+	}
+	
+	mutex->owner->mutexPendingNext = NULL;
+	mutex->num_of_pending_tasks = 0ul;
+
+	return;
+}
