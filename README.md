@@ -56,5 +56,5 @@ Next, follow the steps below:
 ## Contributing
 Please look into Issues. Also if you need futher info or guidance, please do not hesitate to contact me at `vnucec.ivan@gmail.com`.
 
-## Licence
-MIT Licence
+## License
+MIT License
