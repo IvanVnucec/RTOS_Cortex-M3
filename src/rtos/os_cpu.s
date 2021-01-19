@@ -1,3 +1,8 @@
+/**
+ * \file            os_cpu.s
+ * \brief           OS CPU assembly file
+ */
+
 /* ------------- assembler directives -----------------------------*/
     .syntax unified
     .thumb
@@ -13,6 +18,10 @@
 
 
 /* ------------- public functions declarations --------------------*/
+
+/**
+  * @brief  		Will do the context switching between tasks.
+  */
     .thumb_func
 PendSV_Handler:
     PUSH      {R4-R11}
