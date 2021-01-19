@@ -50,9 +50,9 @@ void MutexPendingListRemoveAll(OS_Mutex_S *mutex);
 /**
   * @brief  		Function which initializes Mutex. PrioInversion parameter sets task priority if 
   * 				priority inversion occurs.
-  * @param[in/out] 	*mutex: Mutex handle
-  * @param[in] 		*mutex: Task priority
-  * @param[out] 	*mutex: Mutex Error handle
+  * @param[in] 		mutex: Mutex handle
+  * @param[in] 		mutex: Task priority
+  * @param[out] 	mutex: Mutex Error handle
   * @retval 		None
   */
 void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *err) {
@@ -84,9 +84,9 @@ void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *er
   * @brief  		Function tries to pend a mutex. If succesfull, it returns
   * 				immediatly. If not, it goes to pending state. It will wait
   * 				in pending state until mutex is freed or timeout pass by.
-  * @param[in/out] 	*mutex: Mutex handle
+  * @param[in] 		mutex: Mutex handle
   * @param[in] 		timeout: Timeout value. If 0ul it will wait indefinetly.
-  * @param[out] 	*mutex: Mutex Error handle
+  * @param[out] 	mutex: Mutex Error handle
   * @retval 		None
   */
 void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
@@ -157,8 +157,8 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
   * @brief  		Function tries to post a mutex. Only owner of the mutex 
   * 				can post a mutex. When mutex it posted, it will resume 
   * 				all the tasks that are waiting for that same mutex.
-  * @param[in/out] 	*mutex: Mutex handle
-  * @param[out] 	*mutex: Mutex Error handle
+  * @param[in] 		mutex: Mutex handle
+  * @param[out] 	mutex: Mutex Error handle
   * @retval 		None
   */
 void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
@@ -210,8 +210,8 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 
 /**
   * @brief  		Function adds task TCB to the waiting list.
-  * @param[in/out] 	*mutex: Mutex handle
-  * @param[in] 		*tcb: Task TCB handle
+  * @param[in] 		mutex: Mutex handle
+  * @param[in] 		tcb: Task TCB handle
   * @retval 		None
   */
 void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
@@ -235,8 +235,8 @@ void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
 /**
   * @brief  		Function removes task TCB from the waiting list.
   * 				TCB must be in the waiting list.
-  * @param[in/out] 	*mutex: Mutex handle
-  * @param[in] 		*tcb: Task TCB handle
+  * @param[in] 		mutex: Mutex handle
+  * @param[in] 		tcb: Task TCB handle
   * @retval 		None
   */
 void MutexPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
@@ -268,7 +268,7 @@ void MutexPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
 /**
   * @brief  		Function removes all the task TCBs from the waiting list.
   *					Also, it will put all the pending tasks in Ready state.
-  * @param[in/out] 	*mutex: Mutex handle
+  * @param[in] 		mutex: Mutex handle
   * @retval 		None
   */
 void MutexPendingListRemoveAll(OS_Mutex_S *mutex) {

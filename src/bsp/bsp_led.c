@@ -1,10 +1,20 @@
+/**
+ * \file            bsp_led.c
+ * \brief           STM32F103 Blueplll Board Specific Package source file
+ */
+
+
 #include <stdint.h>
 
 #include "stm32f1xx.h"
-#include "stm32f103xb.h"
 #include "bsp_led.h"
 
 
+/**
+  * @brief  		  Initializes PC13 LED on Bluepill board.
+  * @param[in] 	  None
+  * @retval 		  None
+  */
 void BSP_LED_Init(void) {
   /* Enable peripheral clock */
   SET_BIT(RCC->APB2ENR, RCC_APB2ENR_IOPCEN);
@@ -19,11 +29,21 @@ void BSP_LED_Init(void) {
 }
 
 
+/**
+  * @brief  		  Turn on PC13 LED.
+  * @param[in] 	  None
+  * @retval 		  None
+  */
 void BSP_LED_On(void) {
     GPIOC->BSRR = GPIO_BSRR_BR13_Msk;
 }
 
 
+/**
+  * @brief  		  Turn off PC13 LED.
+  * @param[in] 	  None
+  * @retval 		  None
+  */
 void BSP_LED_Off(void) {
     GPIOC->BSRR = GPIO_BSRR_BS13_Msk;
 }

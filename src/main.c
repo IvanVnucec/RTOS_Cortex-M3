@@ -1,3 +1,9 @@
+/**
+ * \file            main.c
+ * \brief           main.c source file
+ */
+
+
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
@@ -50,6 +56,12 @@ static void task4(void);
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
+
+/**
+  * @brief  		main function
+  * @param 	    	None
+  * @retval 		int
+  */
 int main(void) {
 
 	/* Configure priority of SysTick and PendSV */
@@ -61,12 +73,14 @@ int main(void) {
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock/1000ul);
 
+	/* init and turn on status LED */
 	BSP_LED_Init();
 	BSP_LED_On();
 
 	/* Start OS */
 	OS_Init(NULL);
 
+	/* Create tasks */
 	OS_TaskCreate(&task1TCB,
 		task1,
 		1ul,
@@ -104,6 +118,7 @@ int main(void) {
 	/* enable global interurpts */
 	__enable_irq();
 
+	/* Call the scheduler */
 	OS_EnableScheduler(NULL);
 
 	/* This line should not be reached if OS is initialized properly */
@@ -116,6 +131,10 @@ int main(void) {
 /******************************************** ***********************************************************
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
+
+/**
+  * @brief
+  */
 static void task1(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
@@ -132,6 +151,9 @@ static void task1(void) {
 }
 
 
+/**
+  * @brief
+  */
 static void task2(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;	
 
@@ -148,6 +170,9 @@ static void task2(void) {
 }
 
 
+/**
+  * @brief
+  */
 static void task3(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
@@ -162,6 +187,9 @@ static void task3(void) {
 }
 
 
+/**
+  * @brief
+  */
 static void task4(void) {
 	while(4) {
 	    BSP_LED_Off();
