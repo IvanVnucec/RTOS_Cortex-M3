@@ -2,6 +2,12 @@
 #define OS_H
 
 
+/**
+ * \file            os.h
+ * \brief           OS header file
+ */
+
+
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
@@ -26,7 +32,6 @@
 #define OS_SCHED_FREQ_HZ	(1000ul)
 #define OS_MS_TO_TICKS(ms)	((ms) * OS_SCHED_FREQ_HZ / 1000ul)
 
-#define OS_TCB_LIST_LENGTH	(64ul)
 #define OS_IDLE_TASK_PRIORITY 	(0ul)
 
 
@@ -62,12 +67,12 @@ struct OS_TCB_STRUCT {
  *                         PUBLIC FUNCTION PROTOTYPES
  ******************************************************************************************************/
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
-                void (*taskPointer)(void), 
-                uint32_t taskPriority, 
-                uint8_t *taskName,
-                uint32_t *taskStack, 
-                uint32_t taskStackSize,
-				OS_Error_E *err);
+    void (*taskPointer)(void), 
+    uint32_t taskPriority, 
+    uint8_t *taskName,
+    uint32_t *taskStack, 
+    uint32_t taskStackSize,
+    OS_Error_E *err);
 
 void OS_Schedule(void);
 void OS_Init(OS_Error_E *err);
@@ -75,7 +80,11 @@ void OS_EnableScheduler(OS_Error_E *err);
 void OS_DisableScheduler(OS_Error_E *err);
 uint32_t OS_getOSTickCounter(void);
 void OS_delayTicks(uint32_t ticks);
-void OS_delayTime(uint32_t hours, uint32_t minutes, uint32_t seconds, uint32_t miliseconds);
+void OS_delayTime(uint32_t hours, 
+    uint32_t minutes, 
+    uint32_t seconds, 
+    uint32_t miliseconds);
+    
 void OS_TaskTerminate(void);
 void OS_TickHandler(void);
 

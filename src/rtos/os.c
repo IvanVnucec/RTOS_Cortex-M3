@@ -1,3 +1,9 @@
+/**
+ * \file            os.c
+ * \brief           OS source file
+ */
+
+
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
@@ -11,7 +17,7 @@
 #define NVIC_INT_CTRL *((uint32_t volatile *)0xE000ED04)
 #define NVIC_PENDSVSET_MASK                  0x10000000
 
-#define SIZEOF_TASKIDLESTACK (256)
+#define SIZEOF_TASKIDLESTACK (256UL)
 
 #define OS_1MILISECOND_TO_TICKS	(OS_MS_TO_TICKS(1ul))
 #define OS_1SECOND_TO_TICKS		(1000ul * OS_1MILISECOND_TO_TICKS)
@@ -33,9 +39,10 @@ uint32_t OS_TCBItemsInList;
 OS_TCB_S *OS_TCBCurrent;
 OS_TCB_S *OS_TCBNext;
 
+static uint32_t OS_schedEnabled;
+
 static OS_TCB_S taskIdleTCB;
 static uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
-static uint32_t OS_schedEnabled;
 
 
 /*******************************************************************************************************
@@ -52,6 +59,18 @@ static void OS_TaskIdle(void);
 /*******************************************************************************************************
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
+
+/**
+  * @brief  		Function creates a task. After creation it calls Scheduler.
+  * @param[in] 	    taskTCB: Task TCB handle
+  * @param[in] 		taskPointer: Task function pointer
+  * @param[in]      taskPriority: Task priority. Higher the number, higher the priority.
+  * @param[in]      taskName: Task name. Used for debugging
+  * @param[in]      taskStack: Task available task stack pointer.
+  * @param[in]      taskStackSize: Task available task stack size.
+  * @param[out] 	err: OS Error handle
+  * @retval 		None
+  */
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
                 void (*taskPointer)(void), 
                 uint32_t taskPriority,
@@ -150,6 +169,11 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
 }
 
 
+/**
+  * @brief  		Chooses highest priority ready task.
+  * @param          None
+  * @retval 		None
+  */
 void OS_Schedule(void) {
     OS_TCB_S *maxPriorityTask;
     OS_TCB_S *i;
@@ -190,6 +214,12 @@ void OS_Schedule(void) {
 }
 
 
+/**
+  * @brief  		Initialization of the OS. Must be called before any
+  *                 other OS function.
+  * @param[out] 	err: OS Error handle
+  * @retval 		None
+  */
 void OS_Init(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
 
@@ -213,6 +243,11 @@ void OS_Init(OS_Error_E *err) {
 }
 
 
+/**
+  * @brief  		Enables context switching and calls the scheduler.
+  * @param[out] 	err: OS Error handle
+  * @retval 		None
+  */
 void OS_EnableScheduler(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
 
@@ -228,6 +263,12 @@ void OS_EnableScheduler(OS_Error_E *err) {
 }
 
 
+/**
+  * @brief  		Disables context switching. Can be used to guard
+  *                 shared resources between tasks.
+  * @param[out] 	err: OS Error handle
+  * @retval 		None
+  */
 void OS_DisableScheduler(OS_Error_E *err) {
 	OS_Error_E errLocal = OS_ERROR_NONE;
 
@@ -241,11 +282,22 @@ void OS_DisableScheduler(OS_Error_E *err) {
 }
 
 
+/**
+  * @brief  		Returns OS ticks counter.
+  * @param       	None
+  * @retval 		OS ticks counter.
+  */
 uint32_t OS_getOSTickCounter(void) {
     return OS_tickCounter;
 }
 
 
+/**
+  * @brief  		Delays caller task by number of ticks.
+  *                 To convert milieconds to ticks use OS_MS_TO_TICKS(x)
+  *                 function macro.
+  * @retval 		None
+  */
 void OS_delayTicks(uint32_t ticks) {
     OS_ENTER_CRITICAL();
     
@@ -258,6 +310,14 @@ void OS_delayTicks(uint32_t ticks) {
 }
 
 
+/**
+  * @brief  		Delay a caller task.
+  * @param[in]    	hours
+  * @param[in]    	minutes
+  * @param[in]    	seconds
+  * @param[in]    	miliseconds
+  * @retval 		None
+  */
 void OS_delayTime(uint32_t hours,
 		uint32_t minutes,
 		uint32_t seconds,
@@ -270,6 +330,11 @@ void OS_delayTime(uint32_t hours,
 }
 
 
+/**
+  * @brief  		Put the caller task to the Dormant state.
+  * @param          None
+  * @retval 		None
+  */
 void OS_TaskTerminate(void) {
 	OS_ENTER_CRITICAL();
 
@@ -281,6 +346,13 @@ void OS_TaskTerminate(void) {
 }
 
 
+/**
+  * @brief  		Function increments the OS tick counter. 
+  *                 Decresses delay time for every task waiting
+  *                 for delay to come to an end. 
+  * @param          None
+  * @retval 		None
+  */
 void OS_TickHandler(void) {
 	OS_TCB_S *i;
 
@@ -308,6 +380,11 @@ void OS_TickHandler(void) {
 }
 
 
+/**
+  * @brief  		System tick handler 
+  * @param          None
+  * @retval 		None
+  */
 void SysTick_Handler(void) {
 	OS_TickHandler();
 }
@@ -316,11 +393,21 @@ void SysTick_Handler(void) {
 /*******************************************************************************************************
  *                         PRIVATE FUNCTIONS DEFINITION
  ******************************************************************************************************/
+/**
+  * @brief  		Generates software (PENDSV) interrupt. 
+  * @param          None
+  * @retval 		None
+  */
 static void OS_TriggerContextSwitch(void) {
     NVIC_INT_CTRL = NVIC_PENDSVSET_MASK;
 }
 
 
+/**
+  * @brief  		OS Idle task. 
+  * @param          None
+  * @retval 		None
+  */
 static void OS_TaskIdle(void) {
     for (;;)
         ;
