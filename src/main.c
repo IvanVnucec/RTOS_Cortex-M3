@@ -68,7 +68,6 @@ static void task4(void);
   * @retval 		int
   */
 int main(void) {
-
 	/* setup MCU and Systick frequency */ 
 	setupMCUFrequency();
 	/* setup MCU PendSV and Systick interrupts */
@@ -208,6 +207,8 @@ static void setupMCUFrequency(void) {
 	/* Configure SysTick clock to generate tick every 1 ms */
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock/1000ul);
+  
+  return;
 }
 
 
