@@ -72,7 +72,7 @@ static void OS_TaskIdle(void *param);
   * @retval 		None
   */
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
-                    void (*taskPointer)(void *), 
+                    void (*taskPointer)(void), 
                     uint32_t taskPriority,
                     uint8_t *taskName,
                     uint32_t *taskStack, 

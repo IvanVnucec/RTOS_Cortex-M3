@@ -52,10 +52,10 @@ extern uint32_t SystemCoreClock;
 static void setupMCUFrequency(void);
 static void setupMCUInterrupts(void);
 
-static void task1(void *param);
-static void task2(void *param);
-static void task3(void *param);
-static void task4(void *param);
+static void task1(void);
+static void task2(void);
+static void task3(void);
+static void task4(void);
 
 
 /*******************************************************************************************************
@@ -135,8 +135,7 @@ int main(void) {
 /**
   * @brief
   */
-static void task1(void *param) {
-	(void)(param);
+static void task1(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	while(1) {
@@ -155,8 +154,7 @@ static void task1(void *param) {
 /**
   * @brief
   */
-static void task2(void *param) {
-	(void)(param);
+static void task2(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;	
 
 	while(2) {
@@ -175,8 +173,7 @@ static void task2(void *param) {
 /**
   * @brief
   */
-static void task3(void *param) {
-	(void)(param);
+static void task3(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	OS_MutexPend(&mutex1, 1ul, &errLocal);
@@ -193,8 +190,7 @@ static void task3(void *param) {
 /**
   * @brief
   */
-static void task4(void *param) {
-	(void)(param);
+static void task4(void) {
 	while(4) {
 	    BSP_LED_Off();
         OS_delayTicks(OS_MS_TO_TICKS(500ul));
