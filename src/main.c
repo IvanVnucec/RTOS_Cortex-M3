@@ -68,28 +68,28 @@ int main(void) {
 	OS_Init(NULL);
 
 	OS_TaskCreate(&task1TCB,
-			task1,
-			1ul,
-			(uint8_t *)"task1",
-			task1Stack,
-			256ul,
-			NULL);
+		task1,
+		1ul,
+		(uint8_t *)"task1",
+		task1Stack,
+		256ul,
+		NULL);
 
 	OS_TaskCreate(&task2TCB,
-			task2,
-			2ul,
-			(uint8_t *)"task2",
-			task2Stack,
-			256ul,
-			NULL);
+		task2,
+		2ul,
+		(uint8_t *)"task2",
+		task2Stack,
+		256ul,
+		NULL);
 
 	OS_TaskCreate(&task3TCB,
-			task3,
-			3ul,
-			(uint8_t *)"task3",
-			task3Stack,
-			256ul,
-			NULL);
+		task3,
+		3ul,
+		(uint8_t *)"task3",
+		task3Stack,
+		256ul,
+		NULL);
 
 	OS_TaskCreate(&task4TCB,
 		task4,
