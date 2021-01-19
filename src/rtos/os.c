@@ -53,7 +53,7 @@ static uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
 static void OS_TriggerContextSwitch(void);
-static void OS_TaskIdle(void);
+static void OS_TaskIdle(void *param);
 
 
 /*******************************************************************************************************
@@ -72,14 +72,14 @@ static void OS_TaskIdle(void);
   * @retval 		None
   */
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
-                void (*taskPointer)(void), 
-                uint32_t taskPriority,
-                uint8_t *taskName,
-                uint32_t *taskStack, 
-                uint32_t taskStackSize,
-				OS_Error_E *err) {
+                    void (*taskPointer)(void *), 
+                    uint32_t taskPriority,
+                    uint8_t *taskName,
+                    uint32_t *taskStack, 
+                    uint32_t taskStackSize,
+                    OS_Error_E *err) {
 
-	OS_Error_E errLocal = OS_ERROR_NONE;
+	  OS_Error_E errLocal = OS_ERROR_NONE;
     OS_TCB_S *i;
 
     OS_ENTER_CRITICAL();
@@ -230,12 +230,12 @@ void OS_Init(OS_Error_E *err) {
     OS_TCBCurrent = NULL;
 
     OS_TaskCreate(&taskIdleTCB, 
-              &OS_TaskIdle, 
-			  OS_IDLE_TASK_PRIORITY,
-              (uint8_t *)"taskIdle",
-              taskIdleStack, 
-              SIZEOF_TASKIDLESTACK,
-			  &errLocal);
+      &OS_TaskIdle, 
+      OS_IDLE_TASK_PRIORITY,
+      (uint8_t *)"taskIdle",
+      taskIdleStack, 
+      SIZEOF_TASKIDLESTACK,
+      &errLocal);
 
     if (err != NULL) {
     	*err = errLocal;
@@ -408,7 +408,7 @@ static void OS_TriggerContextSwitch(void) {
   * @param          None
   * @retval 		None
   */
-static void OS_TaskIdle(void) {
+static void OS_TaskIdle(void *param) {
     for (;;)
         ;
 }
