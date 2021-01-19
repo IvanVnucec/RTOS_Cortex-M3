@@ -67,7 +67,7 @@ struct OS_TCB_STRUCT {
  *                         PUBLIC FUNCTION PROTOTYPES
  ******************************************************************************************************/
 void OS_TaskCreate(OS_TCB_S *taskTCB, 
-    void (*taskPointer)(void), 
+    void (*taskPointer)(void *), 
     uint32_t taskPriority, 
     uint8_t *taskName,
     uint32_t *taskStack, 
