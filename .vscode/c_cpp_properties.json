@@ -6,6 +6,7 @@
                 "src",
                 "src/rtos",
                 "src/bsp",
+                "test/src",
                 "drv/CMSIS/Device/ST/STM32F1xx/Include",
                 "drv/CMSIS/Include"
             ],
