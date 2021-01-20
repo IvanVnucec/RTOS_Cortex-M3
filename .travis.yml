@@ -4,4 +4,4 @@ compiler: gcc
 
 script:
     - cd ${TRAVIS_BUILD_DIR}
-    - make test
+    - make
