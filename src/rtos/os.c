@@ -53,7 +53,7 @@ static uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
 static void OS_TriggerContextSwitch(void);
-static void OS_TaskIdle(void *param);
+static void OS_TaskIdle(void);
 
 
 /*******************************************************************************************************
@@ -408,7 +408,7 @@ static void OS_TriggerContextSwitch(void) {
   * @param          None
   * @retval 		None
   */
-static void OS_TaskIdle(void *param) {
+static void OS_TaskIdle(void) {
     for (;;)
         ;
 }
