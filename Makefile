@@ -24,6 +24,7 @@ OPT = -Og -O0
 BUILD_DIR = build
 LINK_DIR = linker
 BOOT_DIR = boot
+TEST_DIR = test
 
 ######################################
 # source
@@ -160,8 +161,26 @@ $(BUILD_DIR):
 #######################################
 # clean up
 #######################################
+.PHONY: clean
 clean:
 	-rm -fR $(BUILD_DIR)
+
+
+#######################################
+# run test
+#######################################
+.PHONY: test
+test:
+	make test -C $(TEST_DIR)
+
+
+#######################################
+# clean test
+#######################################
+.PHONY: clean_test
+clean_test:
+	make clean_test -C $(TEST_DIR)
+
   
 #######################################
 # dependencies

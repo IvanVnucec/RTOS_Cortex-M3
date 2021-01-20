@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/IvanVnucec/RTOS_Cortex-M3.svg)](https://travis-ci.com/IvanVnucec/RTOS_Cortex-M3)
+
 # Cortex-M3 RTOS
 - preemptive, 
 - priority-based, 
