@@ -28,7 +28,8 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-src/all_tests.c
+../src/rtos/mutex.c \
+src/test_mutex.c
 
 # ASM sources
 ASM_SOURCES = 
@@ -63,7 +64,11 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--Isrc
+-I./header_overrides \
+-I./../src/rtos \
+-Isrc \
+-Imocks \
+-Ifakes
 
 
 # compile gcc flags

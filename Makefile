@@ -24,6 +24,7 @@ OPT = -Og -O0
 BUILD_DIR = build
 LINK_DIR = linker
 BOOT_DIR = boot
+TEST_DIR = test
 
 ######################################
 # source
@@ -170,7 +171,7 @@ clean:
 #######################################
 .PHONY: test
 test:
-	cd test && make $@
+	cd $(TEST_DIR) && make test
 
 
 #######################################
@@ -178,7 +179,7 @@ test:
 #######################################
 .PHONY: clean_test
 clean_test:
-	cd test && make clean
+	cd $(TEST_DIR) && make clean
 
   
 #######################################
