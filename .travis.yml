@@ -1,21 +1,14 @@
 notifications:
   email: false
 
-sudo: false
-
 language: c
 
-env: 
-  - GCC_URL = https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2?revision=ca0cbf9c-9de2-491c-ac48-898b5bbc0443&la=en&hash=68760A8AE66026BCF99F05AC017A6A50C6FD832A
-  - GCC_PATH = $HOME/arm-gcc-toolchain
-
 install:
-  - cd $HOME
-  - mkdir arm-gcc-toolchain
-  - wget -O $HOME/arm-gcc-toolchain/gcc.tar.bz2 $GCC_URL
-  - cd arm-gcc-toolchain
-  - tar -jxf gcc.tar.bz2 --strip=1
-  - popd
+  - export GCC_PATH=$HOME/gcc-arm-none-eabi-10-2020-q4-major
+  - export GCC_ARCHIVE=$HOME/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
+  - export GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2?revision=ca0cbf9c-9de2-491c-ac48-898b5bbc0443&la=en&hash=68760A8AE66026BCF99F05AC017A6A50C6FD832A
+  - wget $GCC_URL -O $GCC_ARCHIVE && tar xfj $GCC_ARCHIVE -C $HOME
+  - export PATH=$PATH:$GCC_PATH/bin
   
 before_script:
   - arm-none-eabi-gcc --version
