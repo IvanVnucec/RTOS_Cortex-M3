@@ -16,7 +16,7 @@ language: c
 #  - export PATH=$HOME/arm-gcc-toolchain/bin:$PATH
   
 before_script:
-  - sudo apt-get install gcc-arm-none-eabi
+  - sudo apt-get install libnewlib-arm-none-eabi
   - arm-none-eabi-gcc --version
 
 script:
