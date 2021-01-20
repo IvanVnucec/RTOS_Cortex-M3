@@ -171,7 +171,7 @@ clean:
 #######################################
 .PHONY: test
 test:
-	cd $(TEST_DIR) && make
+	make test -C $(TEST_DIR)
 
 
 #######################################
@@ -179,7 +179,7 @@ test:
 #######################################
 .PHONY: clean_test
 clean_test:
-	cd $(TEST_DIR) && make clean
+	make clean_test -C $(TEST_DIR)
 
   
 #######################################
