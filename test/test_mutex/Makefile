@@ -61,7 +61,7 @@ clean:
 
 .PHONY: run
 run: $(BUILD_DIR)/$(TARGET)
-	-./$<
+	./$<
 
 
 -include $(wildcard $(BUILD_DIR)/*.d)
