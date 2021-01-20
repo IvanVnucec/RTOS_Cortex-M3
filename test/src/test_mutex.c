@@ -143,5 +143,5 @@ int main(void) {
 	MU_RUN_SUITE(test_suite_mutex);
 	MU_REPORT();
     
-	return MU_EXIT_CODE;
+	return 1;
 }
