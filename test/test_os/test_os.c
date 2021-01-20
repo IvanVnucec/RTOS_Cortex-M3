@@ -12,7 +12,7 @@ void test_teardown(void) {
 
 
 MU_TEST(test_check) {
-	mu_check(1 == 1);
+	mu_check(1 == 2);
 }
 
 
@@ -26,5 +26,5 @@ int main(void) {
 	MU_RUN_SUITE(test_suite);
 	MU_REPORT();
     
-	return 1;
+	return MU_EXIT_CODE;
 }
