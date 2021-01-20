@@ -9,7 +9,7 @@ HEADER_OVERRIDES_DIR = ./header_overrides
 MINUNIT_DIR = ./../
 
 C_SOURCES =  \
-minunit_example.c
+test_os.c
 
 C_INCLUDES =  \
 -I$(MINUNIT_DIR)
