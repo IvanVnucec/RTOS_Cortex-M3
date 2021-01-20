@@ -25,9 +25,9 @@ jobs:
     - name: test
       before_script:
         - gcc --version
-        
+
       script:
         - cd ${TRAVIS_BUILD_DIR}
         - make test
         - cd test/build
-        - ./test_mutex.out
+        - ./test_mutex
