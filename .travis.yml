@@ -1,16 +1,34 @@
 notifications:
   email: false
 
+sudo: false
+
 language: c
 
-env:
-  - GCC_PATH=${HOME}/gcc-arm-none-eabi-10-2020-q4-major
-  - GCC_ARCHIVE=${HOME}/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2
-  - GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2?revision=ca0cbf9c-9de2-491c-ac48-898b5bbc0443&la=en&hash=68760A8AE66026BCF99F05AC017A6A50C6FD832A
+matrix:
+  fast_finish: true
+  include:
+    - name: 7-2018-q2
+      env: GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2?revision=bc2c96c0-14b5-4bb4-9f18-bceb4050fee7?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,7-2018-q2-update
+    - name : 6-2017-q2
+      env: GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2?revision=2cc92fb5-3e0e-402d-9197-bdfc8224d8a5?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,6-2017-q2-update
+    - name : 5-2016-q3
+      env: GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/5_4-2016q3/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2?revision=111dee36-f88b-4672-8ac6-48cf41b4d375?product=GNU%20Arm%20Embedded%20Toolchain,32-bit,,Linux,5-2016-q3-update
+
+addons:
+  apt:
+    packages:
+    - libc6-i386 
 
 install:
-  - wget -O ${GCC_ARCHIVE} - https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2?revision=ca0cbf9c-9de2-491c-ac48-898b5bbc0443&la=en&hash=68760A8AE66026BCF99F05AC017A6A50C6FD832A && tar xfj ${GCC_ARCHIVE} -C ${HOME}
-  - export PATH=${PATH}:${GCC_PATH}/bin
+  - pushd .
+  - cd ~ 
+  - mkdir arm-gcc-toolchain
+  - wget -O $HOME/arm-gcc-toolchain/gcc.tar.bz2 $GCC_URL
+  - cd arm-gcc-toolchain
+  - tar -jxf gcc.tar.bz2 --strip=1
+  - popd
+  - export PATH=$HOME/arm-gcc-toolchain/bin:$PATH
   
 before_script:
   - arm-none-eabi-gcc --version
