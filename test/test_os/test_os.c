@@ -12,7 +12,7 @@ void test_teardown(void) {
 
 
 MU_TEST(test_check) {
-	mu_check(1 == 2);
+	mu_check(1 == 1);
 }
 
 

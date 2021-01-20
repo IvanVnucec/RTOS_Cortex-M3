@@ -120,6 +120,7 @@ MU_TEST(test_OS_MutexPend_mutexNotFree1) {
     mu_assert(mutex.owner == OS_TCBCurrent, "");
     mu_assert(mutex.owner->mutexPendingNext == NULL, "");
     mu_assert(mutex.state == OS_MUTEX_STATE_OWNED, "");
+    mu_assert(1 == 2, "1 == 2");
     //mu_assert(mutex.oldOwnerTaskPriority ==  mutex.owner->taskPriority, "");
     //mu_assert(mutex.owner->taskPriority == mutex.prioInversion, "");
     //mu_assert(mutex.isPrioInversion == TRUE, "");
