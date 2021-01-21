@@ -14,7 +14,8 @@ test_os.c
 C_INCLUDES =  \
 -I$(MINUNIT_DIR)
 
-C_DEFS = 
+C_DEFS = \
+-DUNIT_TESTING
 
 OPT = -O0
 

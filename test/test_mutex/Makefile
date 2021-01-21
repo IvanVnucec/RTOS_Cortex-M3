@@ -18,7 +18,8 @@ C_INCLUDES =  \
 -I$(RTOS_DIR) \
 -I$(SRC_DIR)
 
-C_DEFS = 
+C_DEFS = \
+-DUNIT_TESTING
 
 OPT = -O0
 

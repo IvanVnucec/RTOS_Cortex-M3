@@ -38,8 +38,19 @@ extern OS_TCB_S *OS_TCBCurrent;
 /*******************************************************************************************************
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
+#ifndef UNIT_TESTING
+static 
+#endif 
 void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb);
+
+#ifndef UNIT_TESTING
+static 
+#endif 
 void MutexPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb);
+
+#ifndef UNIT_TESTING
+static 
+#endif 
 void MutexPendingListRemoveAll(OS_Mutex_S *mutex);
 
 
@@ -67,7 +78,6 @@ void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *er
 		mutex->isInitialized = TRUE;
 		mutex->prioInversion = prioInversion;
 		mutex->isPrioInversion = FALSE;
-
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
 	}
@@ -114,7 +124,8 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 
 				if (timeout > 0ul) {
 					OS_delayTicks(timeout);
-
+					/* Todo: BUG. MutexPendingListRemoveAll will set "taskTick" to 0ul
+					so this is always equal to false */
 					if (OS_TCBCurrent->taskTick > 0ul) {
 						/* pend it */
 						mutex->owner = OS_TCBCurrent;
@@ -167,31 +178,33 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
 	if (mutex != NULL) {
 		OS_ENTER_CRITICAL();
 
-		if (mutex->owner != NULL) {
-			/* only the owner of mutex can post mutex */
-			if (mutex->owner == OS_TCBCurrent) {
-				mutex->state = OS_MUTEX_STATE_FREE;
+		if (mutex->isInitialized == TRUE) {
+			if (mutex->state == OS_MUTEX_STATE_OWNED) {
+				/* only the owner of mutex can post mutex */
+				if (mutex->owner == OS_TCBCurrent) {
+					mutex->state = OS_MUTEX_STATE_FREE;
 
-				if (mutex->isPrioInversion == TRUE) {
-					mutex->isPrioInversion = FALSE;
-					mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
+					if (mutex->isPrioInversion == TRUE) {
+						mutex->isPrioInversion = FALSE;
+						mutex->owner->taskPriority = mutex->oldOwnerTaskPriority;
+					}
+
+					/* remove all TCBs from mutex pending list */
+					MutexPendingListRemoveAll(mutex);
+
+					OS_EXIT_CRITICAL();
+					OS_Schedule();
+					OS_ENTER_CRITICAL();
+
+				} else {
+					errLocal = OS_MUTEX_ERROR_NOT_OWNER_POST;
 				}
-
-				/* remove all TCBs from mutex pending list */
-				MutexPendingListRemoveAll(mutex);
-				mutex->owner = NULL;
-
-				OS_EXIT_CRITICAL();
-				OS_Schedule();
-				OS_ENTER_CRITICAL();
-
 			} else {
-				errLocal = OS_MUTEX_ERROR_NOT_OWNER_POST;
+				errLocal = OS_MUTEX_ERROR_NOT_PENDED;
 			}
 		} else {
-			errLocal = OS_MUTEX_ERROR_NULL_PTR;
+			errLocal = OS_MUTEX_ERROR_NOT_INITIALIZED;
 		}
-
 	} else {
 		errLocal = OS_MUTEX_ERROR_NULL_PTR;
 	}
@@ -214,6 +227,9 @@ void OS_MutexPost(OS_Mutex_S *mutex, OS_MutexError_E *err) {
   * @param[in] 		tcb: Task TCB handle
   * @retval 		None
   */
+#ifndef UNIT_TESTING
+static 
+#endif
 void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
 	OS_TCB_S *i;
 	OS_TCB_S *last_i;
@@ -226,6 +242,7 @@ void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
 		i = i->mutexPendingNext;
 	}
 	last_i->mutexPendingNext = tcb;
+	last_i->mutexPendingNext->mutexPendingNext = NULL;
 	mutex->num_of_pending_tasks++;
 
 	return;
@@ -239,6 +256,9 @@ void MutexPendingListAdd(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
   * @param[in] 		tcb: Task TCB handle
   * @retval 		None
   */
+#ifndef UNIT_TESTING
+static 
+#endif
 void MutexPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
 	OS_TCB_S *i;
 	OS_TCB_S *last_i;
@@ -271,6 +291,9 @@ void MutexPendingListRemove(OS_Mutex_S *mutex, OS_TCB_S *tcb) {
   * @param[in] 		mutex: Mutex handle
   * @retval 		None
   */
+#ifndef UNIT_TESTING
+static 
+#endif
 void MutexPendingListRemoveAll(OS_Mutex_S *mutex) {
 	OS_TCB_S *i;
 	OS_TCB_S *j;
@@ -285,7 +308,6 @@ void MutexPendingListRemoveAll(OS_Mutex_S *mutex) {
 		i->taskState = OS_TASK_STATE_READY;
 		i->taskTick = 0ul;
 		j = i->mutexPendingNext;
-		i->mutexPendingNext = NULL;
 		i = j;
 	}
 	
