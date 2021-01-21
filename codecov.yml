@@ -1,0 +1,4 @@
+ignore:
+  - "test/minunit.h"
+  - "test/test_mutex/test_mutex.c"
+  - "test/test_os/test_os.c"

@@ -27,3 +27,4 @@ jobs:
       script:
         - cd ${TRAVIS_BUILD_DIR}
         - make test
+        - bash <(curl -s https://codecov.io/bash)
