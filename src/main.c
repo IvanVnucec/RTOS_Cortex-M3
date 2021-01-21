@@ -138,7 +138,7 @@ static void task1(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	while(1) {
-		OS_MutexPend(&mutex1, 20, &errLocal);
+		OS_MutexPend(&mutex1, 60, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
 			OS_delayTicks(20);
 			OS_MutexPost(&mutex1, NULL);
@@ -157,7 +157,7 @@ static void task2(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;	
 
 	while(2) {
-		OS_MutexPend(&mutex1, 20, &errLocal);
+		OS_MutexPend(&mutex1, 40, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
 			OS_delayTicks(20);
 			OS_MutexPost(&mutex1, NULL);

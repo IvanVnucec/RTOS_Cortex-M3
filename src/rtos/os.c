@@ -79,7 +79,7 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
                     uint32_t taskStackSize,
                     OS_Error_E *err) {
 
-	  OS_Error_E errLocal = OS_ERROR_NONE;
+    OS_Error_E errLocal = OS_ERROR_NONE;
     OS_TCB_S *i;
 
     OS_ENTER_CRITICAL();
@@ -160,11 +160,11 @@ void OS_TaskCreate(OS_TCB_S *taskTCB,
     OS_EXIT_CRITICAL();
 
     if (errLocal == OS_ERROR_NONE) {
-    	OS_Schedule();
+      OS_Schedule();
     }
 
     if (err != NULL) {
-    	*err = errLocal;
+      *err = errLocal;
     }
 }
 
@@ -178,10 +178,10 @@ void OS_Schedule(void) {
     OS_TCB_S *maxPriorityTask;
     OS_TCB_S *i;
 
-	OS_ENTER_CRITICAL();
+  OS_ENTER_CRITICAL();
 
-	if (OS_schedEnabled == TRUE) {
-		/* If the current task was still running then set it to ready state */
+  if (OS_schedEnabled == TRUE) {
+    /* If the current task was still running then set it to ready state */
         /* this must be checked because OS_TCBCurrent can be NULL */
         if (OS_TCBCurrent != NULL) {
             if (OS_TCBCurrent->taskState == OS_TASK_STATE_RUNNING) {
@@ -193,23 +193,23 @@ void OS_Schedule(void) {
         maxPriorityTask = &taskIdleTCB;
         /* assumption: Idle taks is first in TCB linked list */
         i = OS_TCBListHead->TCBNext;
-		while (i != NULL) {
-			if ((i->taskState == OS_TASK_STATE_READY) && (i->taskPriority > maxPriorityTask->taskPriority)) {
-				maxPriorityTask = i;
-			}
+    while (i != NULL) {
+      if ((i->taskState == OS_TASK_STATE_READY) && (i->taskPriority > maxPriorityTask->taskPriority)) {
+        maxPriorityTask = i;
+      }
 
             i = i->TCBNext;
-		}
+    }
 
-		OS_TCBNext = maxPriorityTask;
+    OS_TCBNext = maxPriorityTask;
         OS_TCBNext->taskState = OS_TASK_STATE_RUNNING;
 
-		OS_EXIT_CRITICAL();
+    OS_EXIT_CRITICAL();
 
-		OS_TriggerContextSwitch();
-	}
+    OS_TriggerContextSwitch();
+  }
 
-	OS_EXIT_CRITICAL();
+  OS_EXIT_CRITICAL();
 
 }
 
@@ -221,9 +221,9 @@ void OS_Schedule(void) {
   * @retval 		None
   */
 void OS_Init(OS_Error_E *err) {
-	OS_Error_E errLocal = OS_ERROR_NONE;
+  OS_Error_E errLocal = OS_ERROR_NONE;
 
-	OS_schedEnabled = FALSE;
+  OS_schedEnabled = FALSE;
 
     OS_TCBItemsInList = 0ul;
     OS_TCBListHead = NULL;
@@ -238,7 +238,7 @@ void OS_Init(OS_Error_E *err) {
       &errLocal);
 
     if (err != NULL) {
-    	*err = errLocal;
+      *err = errLocal;
     }
 }
 
@@ -249,16 +249,16 @@ void OS_Init(OS_Error_E *err) {
   * @retval 		None
   */
 void OS_EnableScheduler(OS_Error_E *err) {
-	OS_Error_E errLocal = OS_ERROR_NONE;
+  OS_Error_E errLocal = OS_ERROR_NONE;
 
-	OS_ENTER_CRITICAL();
-	OS_schedEnabled = TRUE;
-	OS_EXIT_CRITICAL();
+  OS_ENTER_CRITICAL();
+  OS_schedEnabled = TRUE;
+  OS_EXIT_CRITICAL();
 
-	OS_Schedule();
+  OS_Schedule();
 
     if (err != NULL) {
-    	*err = errLocal;
+      *err = errLocal;
     }
 }
 
@@ -270,14 +270,14 @@ void OS_EnableScheduler(OS_Error_E *err) {
   * @retval 		None
   */
 void OS_DisableScheduler(OS_Error_E *err) {
-	OS_Error_E errLocal = OS_ERROR_NONE;
+  OS_Error_E errLocal = OS_ERROR_NONE;
 
-	OS_ENTER_CRITICAL();
-	OS_schedEnabled = FALSE;
-	OS_EXIT_CRITICAL();
+  OS_ENTER_CRITICAL();
+  OS_schedEnabled = FALSE;
+  OS_EXIT_CRITICAL();
 
     if (err != NULL) {
-    	*err = errLocal;
+      *err = errLocal;
     }
 }
 
@@ -319,14 +319,14 @@ void OS_delayTicks(uint32_t ticks) {
   * @retval 		None
   */
 void OS_delayTime(uint32_t hours,
-		uint32_t minutes,
-		uint32_t seconds,
-		uint32_t miliseconds) {
+    uint32_t minutes,
+    uint32_t seconds,
+    uint32_t miliseconds) {
 
-	OS_delayTicks(hours * OS_1HOUR_TO_TICKS +
-			minutes * OS_1MINUTE_TO_TICKS +
-			seconds * OS_1SECOND_TO_TICKS +
-			miliseconds * OS_1MILISECOND_TO_TICKS);
+  OS_delayTicks(hours * OS_1HOUR_TO_TICKS +
+      minutes * OS_1MINUTE_TO_TICKS +
+      seconds * OS_1SECOND_TO_TICKS +
+      miliseconds * OS_1MILISECOND_TO_TICKS);
 }
 
 
@@ -336,13 +336,13 @@ void OS_delayTime(uint32_t hours,
   * @retval 		None
   */
 void OS_TaskTerminate(void) {
-	OS_ENTER_CRITICAL();
+  OS_ENTER_CRITICAL();
 
-	OS_TCBCurrent->taskState = OS_TASK_STATE_DORMANT;
+  OS_TCBCurrent->taskState = OS_TASK_STATE_DORMANT;
 
-	OS_EXIT_CRITICAL();
+  OS_EXIT_CRITICAL();
 
-	OS_Schedule();
+  OS_Schedule();
 }
 
 
@@ -354,9 +354,9 @@ void OS_TaskTerminate(void) {
   * @retval 		None
   */
 void OS_TickHandler(void) {
-	OS_TCB_S *i;
+  OS_TCB_S *i;
 
-	OS_ENTER_CRITICAL();
+  OS_ENTER_CRITICAL();
 
     OS_tickCounter++;
 
@@ -386,7 +386,7 @@ void OS_TickHandler(void) {
   * @retval 		None
   */
 void SysTick_Handler(void) {
-	OS_TickHandler();
+  OS_TickHandler();
 }
 
 
