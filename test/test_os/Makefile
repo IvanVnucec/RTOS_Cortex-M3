@@ -23,9 +23,10 @@ CC = gcc
 
 CFLAGS = $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -Wextra
 
-CFLAGS += -g -lgcov
-LDFLAGS += -lgcov
+CFLAGS += -g
 
+CFLAGS += --coverage
+LDFLAGS += --coverage
 
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
@@ -41,11 +42,11 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@ $(LDFLAGS)
+	$(CC) $(LDFLAGS) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 
 $(BUILD_DIR)/$(TARGET): $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) -o $@
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
 
 $(BUILD_DIR):
