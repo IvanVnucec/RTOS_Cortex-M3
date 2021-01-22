@@ -85,7 +85,7 @@ int main(void) {
 	/* Create tasks */
 	OS_TaskCreate(&task1TCB,
 		task1,
-		1ul,
+		4ul,
 		(uint8_t *)"task1",
 		task1Stack,
 		256ul,
@@ -93,7 +93,7 @@ int main(void) {
 
 	OS_TaskCreate(&task2TCB,
 		task2,
-		2ul,
+		3ul,
 		(uint8_t *)"task2",
 		task2Stack,
 		256ul,
@@ -101,7 +101,7 @@ int main(void) {
 
 	OS_TaskCreate(&task3TCB,
 		task3,
-		3ul,
+		2ul,
 		(uint8_t *)"task3",
 		task3Stack,
 		256ul,
@@ -109,7 +109,7 @@ int main(void) {
 
 	OS_TaskCreate(&task4TCB,
 		task4,
-		4ul,
+		1ul,
 		(uint8_t *)"task4",
 		task4Stack,
 		256ul,
@@ -138,11 +138,12 @@ static void task1(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
 	while(1) {
-		OS_MutexPend(&mutex1, 60, &errLocal);
+		OS_MutexPend(&mutex1, 0, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
-			OS_delayTicks(20);
+			OS_delayTicks(1);
 			OS_MutexPost(&mutex1, NULL);
-
+			OS_MutexPend(&mutex1, 0, &errLocal);
+			OS_delayTicks(1);
 		} else {
 			
 		}
@@ -157,7 +158,7 @@ static void task2(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;	
 
 	while(2) {
-		OS_MutexPend(&mutex1, 40, &errLocal);
+		OS_MutexPend(&mutex1, 100, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
 			OS_delayTicks(20);
 			OS_MutexPost(&mutex1, NULL);
@@ -175,7 +176,7 @@ static void task2(void) {
 static void task3(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
-	OS_MutexPend(&mutex1, 1ul, &errLocal);
+	OS_MutexPend(&mutex1, 100, &errLocal);
 	if (errLocal == OS_MUTEX_ERROR_NONE) {
 		OS_delayTicks(20ul);
 		OS_MutexPost(&mutex1, NULL);

@@ -101,6 +101,7 @@ void OS_MutexInit(OS_Mutex_S *mutex, uint32_t prioInversion, OS_MutexError_E *er
   */
 void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+	uint32_t tick;
 
 	OS_ENTER_CRITICAL();
 
@@ -123,10 +124,18 @@ void OS_MutexPend(OS_Mutex_S *mutex, uint32_t timeout, OS_MutexError_E *err) {
 				MutexPendingListAdd(mutex, OS_TCBCurrent);
 
 				if (timeout > 0ul) {
+					tick = OS_getOSTickCounter();
+
 					OS_delayTicks(timeout);
-					/* Todo: BUG. MutexPendingListRemoveAll will set "taskTick" to 0ul
-					so this is always equal to false */
-					if (OS_TCBCurrent->taskTick > 0ul) {
+					/* Todo: BUG. If owner task releases mutex, it will
+					 * set all pending tasks to the ready state. Again some
+					 * mutex that was waiting for task can pend mutex and then
+					 * immidiatly call Delay function making new task running. That
+					 * task can then go into this if condition because timeout still
+					 * hadnt passed by and then, already owned mutex can be taken from
+					 * another task.
+					 */
+					if (OS_getOSTickCounter() - tick < timeout) {
 						/* pend it */
 						mutex->owner = OS_TCBCurrent;
 						mutex->state = OS_MUTEX_STATE_OWNED;
