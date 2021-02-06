@@ -1,190 +1,100 @@
-# ------------------------------------------------
-# Generic Makefile (based on gcc)
-# ------------------------------------------------
+.SECONDARY:
 
-######################################
-# target
-######################################
-TARGET = rtos
-
-
-######################################
-# building variables
-######################################
-# debug build?
-DEBUG = 1
-# optimization
-OPT = -Og -O0
-
-
-#######################################
-# paths
-#######################################
-# Build path
+PROJECT = rtos
 BUILD_DIR = build
-LINK_DIR = linker
-BOOT_DIR = boot
-TEST_DIR = test
+Q ?= @
 
-######################################
-# source
-######################################
-# C sources
-C_SOURCES =  \
-src/main.c \
-src/stm32f1xx_it.c \
-src/system_stm32f1xx.c \
-src/rtos/mutex.c \
-src/rtos/os.c \
-src/bsp/bsp_led.c
+CC = arm-none-eabi-gcc
+LD = arm-none-eabi-ld
+OCPY = arm-none-eabi-objcopy
+MKDIR = mkdir
+GIT=git
+ECHO=@echo
+CAT=cat
+PYTHON ?= python
 
-# ASM sources
-ASM_SOURCES =  \
-src/rtos/os_cpu.s \
-$(BOOT_DIR)/startup_stm32f103xb.s
+GIT_SHA := \"$(shell $(GIT) rev-parse --short HEAD)\"
 
 
-#######################################
-# binaries
-#######################################
-PREFIX = arm-none-eabi-
-# The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
-# either it can be added to the PATH environment variable.
-ifdef GCC_PATH
-CC = $(GCC_PATH)/$(PREFIX)gcc
-AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
-CP = $(GCC_PATH)/$(PREFIX)objcopy
-SZ = $(GCC_PATH)/$(PREFIX)size
-else
-CC = $(PREFIX)gcc
-AS = $(PREFIX)gcc -x assembler-with-cpp
-CP = $(PREFIX)objcopy
-SZ = $(PREFIX)size
-endif
-HEX = $(CP) -O ihex
-BIN = $(CP) -O binary -S
- 
-#######################################
-# CFLAGS
-#######################################
-# cpu
-CPU = -mcpu=cortex-m3
+SRCS_APP = \
+	src/clock.c \
+	src/main.c \
+	src/syscalls.c \
+	src/usart.c \
+	src/bsp/bsp_led.c \
+	src/rtos/mutex.c \
+	src/rtos/os_cpu.s \
+	src/rtos/os.c
 
-# fpu
-# NONE for Cortex-M0/M0+/M3
+INCLUDES = \
+	src \
+	src/rtos \
+	src/bsp
 
-# float-abi
+RENODE_REPO = renode
 
+DEFINES += \
+	STM32F1 \
+	DSTM32F103xB \
+	GIT_SHA=$(GIT_SHA) \
 
-# mcu
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+CFLAGS += \
+  -mcpu=cortex-m3 \
+  -mthumb \
+  -Wall \
+  -Werror \
+  -std=gnu11 \
+  -O0 \
+  -g \
+  -ffunction-sections \
+  -fdata-sections
 
-# macros for gcc
-# AS defines
-AS_DEFS =
+LDFLAGS += \
+  -static \
+  -nostartfiles \
+  -specs=nano.specs \
+  -Wl,--start-group -lc -lgcc -lnosys -Wl,--end-group \
+  -Wl,-Map=$(BUILD_DIR)/$(PROJECT).map \
 
-# C defines
-C_DEFS =  \
--DSTM32F103xB
+LDSCRIPT = stm32f103c8t6.ld
 
+LDFLAGS_APP = $(LDFLAGS) -T $(LDSCRIPT)
 
-# AS includes
-AS_INCLUDES =
+OPENCM3_PATH = ./libopencm3
+OPENCM3_INCLUDES = $(OPENCM3_PATH)/include
+OPENCM3_LIB = $(OPENCM3_PATH)/lib/libopencm3_stm32f1.a
 
-# C includes
-C_INCLUDES =  \
--Isrc \
--Isrc/rtos \
--Isrc/bsp \
--Idrv/CMSIS/Device/ST/STM32F1xx/Include \
--Idrv/CMSIS/Include
+INCLUDES += $(OPENCM3_INCLUDES)
+CFLAGS += $(foreach i,$(INCLUDES),-I$(i))
+CFLAGS += $(foreach d,$(DEFINES),-D$(d))
 
+.PHONY: all test_docker test_local renode
+all: $(BUILD_DIR)/$(PROJECT).elf
 
-# compile gcc flags
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -Wextra -fdata-sections -ffunction-sections
+$(BUILD_DIR)/$(PROJECT).elf: $(SRCS_APP) $(OPENCM3_LIB)
+	$(ECHO) "  LD		$@"
+	$(Q)$(MKDIR) -p $(BUILD_DIR)
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS_APP) $^ -o $@
 
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -Wextra -fdata-sections -ffunction-sections
+$(RENODE_REPO):
+	$(ECHO) "renode not found, cloning it..."
+	$(Q)$(GIT) clone https://github.com/renode/renode.git 2>1
 
-ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
-endif
+$(OPENCM3_LIB):
+	$(ECHO) "Building libopencm3"
+	$(Q)$(MAKE) -s -C $(OPENCM3_PATH) TARGETS=stm32/f1
 
+test_docker:
+	./docker-test.sh
 
-# Generate dependency information
-CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
+test_local: $(RENODE_REPO)
+	./run_tests.sh
 
+start_renode:
+	./start.sh
 
-#######################################
-# LDFLAGS
-#######################################
-# link script
-LDSCRIPT = $(LINK_DIR)/STM32F103C8Tx_FLASH.ld
-
-# libraries
-LIBS = -lc -lm -lnosys 
-LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
-
-# default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
-
-
-#######################################
-# build the application
-#######################################
-# list of objects
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
-vpath %.c $(sort $(dir $(C_SOURCES)))
-# list of ASM program objects
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
-vpath %.s $(sort $(dir $(ASM_SOURCES)))
-
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
-
-$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
-	$(AS) -c $(CFLAGS) $< -o $@
-
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
-	$(SZ) $@
-
-$(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(HEX) $< $@
-	
-$(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(BIN) $< $@	
-	
-$(BUILD_DIR):
-	mkdir $@		
-
-#######################################
-# clean up
-#######################################
 .PHONY: clean
 clean:
-	-rm -fR $(BUILD_DIR)
-
-
-#######################################
-# run test
-#######################################
-.PHONY: test
-test:
-	make test -C $(TEST_DIR)
-
-
-#######################################
-# clean test
-#######################################
-.PHONY: clean_test
-clean_test:
-	make clean_test -C $(TEST_DIR)
-
-  
-#######################################
-# dependencies
-#######################################
--include $(wildcard $(BUILD_DIR)/*.d)
-
-# *** EOF ***
+	$(ECHO) "  CLEAN		rm -rf $(BUILD_DIR)"
+	$(Q)rm -rf $(BUILD_DIR)
+	$(Q)make -C $(OPENCM3_PATH) TARGETS=stm32/f1 clean

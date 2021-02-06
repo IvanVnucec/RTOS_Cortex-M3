@@ -13,7 +13,7 @@
  ******************************************************************************************************/
 #include <stdint.h>
 
-#include "cmsis_gcc.h"
+#include "libopencm3/cm3/cortex.h"
 #include "os_errors.h"
 #include "os_forward.h"
 #include "mutex_forward.h"
@@ -27,8 +27,8 @@
 
 #define NULL  ((void *)0)
 
-#define OS_ENTER_CRITICAL(x) (__disable_irq(x))
-#define OS_EXIT_CRITICAL(x)  (__enable_irq(x))
+#define OS_ENTER_CRITICAL(x) (cm_disable_interrupts(x))
+#define OS_EXIT_CRITICAL(x)  (cm_enable_interrupts(x))
 
 #define OS_SCHED_FREQ_HZ	(1000ul)
 #define OS_MS_TO_TICKS(ms)	((ms) * OS_SCHED_FREQ_HZ / 1000ul)

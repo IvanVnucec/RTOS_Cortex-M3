@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
-#include "stm32f1xx.h"
 #include "bsp_led.h"
+#include "libopencm3/stm32/gpio.h"
+#include <libopencm3/stm32/rcc.h>
 
 
 /**
@@ -16,16 +17,10 @@
   * @retval 		  None
   */
 void BSP_LED_Init(void) {
-  /* Enable peripheral clock */
-  SET_BIT(RCC->APB2ENR, RCC_APB2ENR_IOPCEN);
+    rcc_periph_clock_enable(RCC_GPIOC);
 
-  /* Output mode, 2 MHz */
-  CLEAR_BIT(GPIOC->CRH, GPIO_CRH_MODE13_1);
-  SET_BIT(GPIOC->CRH, GPIO_CRH_MODE13_0);
+    gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO13);
 
-  /* General purpose output, push-pull */
-  CLEAR_BIT(GPIOC->CRH, GPIO_CRH_CNF13_0);
-  CLEAR_BIT(GPIOC->CRH, GPIO_CRH_CNF13_1);
 }
 
 
@@ -35,7 +30,7 @@ void BSP_LED_Init(void) {
   * @retval 		  None
   */
 void BSP_LED_On(void) {
-    GPIOC->BSRR = GPIO_BSRR_BR13_Msk;
+    gpio_set(GPIOC, GPIO13);
 }
 
 
@@ -45,5 +40,5 @@ void BSP_LED_On(void) {
   * @retval 		  None
   */
 void BSP_LED_Off(void) {
-    GPIOC->BSRR = GPIO_BSRR_BS13_Msk;
+    gpio_clear(GPIOC, GPIO13);
 }
