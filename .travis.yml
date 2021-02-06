@@ -21,10 +21,10 @@ jobs:
         - cd ${TRAVIS_BUILD_DIR}
         - make
 
-    - name: test
-      before_script:
-        - gcc --version
-      script:
-        - cd ${TRAVIS_BUILD_DIR}
-        - make test
-        - bash <(curl -s https://codecov.io/bash)
+#    - name: test
+#      before_script:
+#        - gcc --version
+#      script:
+#        - cd ${TRAVIS_BUILD_DIR}
+#        - make test
+#        - bash <(curl -s https://codecov.io/bash)
