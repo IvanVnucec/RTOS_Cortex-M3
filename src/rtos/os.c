@@ -10,6 +10,8 @@
 #include "os.h"
 #include "os_errors.h"
 
+#include <libopencm3/cm3/nvic.h>
+
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
@@ -385,8 +387,8 @@ void OS_TickHandler(void) {
   * @param          None
   * @retval 		None
   */
-void SysTick_Handler(void) {
-  OS_TickHandler();
+void sys_tick_handler(void) {
+    OS_TickHandler();
 }
 
 
@@ -412,10 +414,4 @@ static void OS_TaskIdle(void) {
     for (;;)
         ;
 }
-
-
-
-
-
-
 

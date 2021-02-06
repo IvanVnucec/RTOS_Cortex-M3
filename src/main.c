@@ -7,11 +7,15 @@
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
-#include "stm32f1xx.h"
+#include <libopencm3/cm3/nvic.h>
 
 #include "bsp_led.h"
 #include "os.h"
 #include "mutex.h"
+
+#include "clock.h"
+#include "usart.h"
+
 
 /*******************************************************************************************************
  *                         PRIVATE DEFINES
@@ -48,9 +52,6 @@ extern uint32_t SystemCoreClock;
 /*******************************************************************************************************
  *                         PRIVATE FUNCTIONS DECLARATION
  ******************************************************************************************************/
-static void setupMCUFrequency(void);
-static void setupMCUInterrupts(void);
-
 static void task1(void);
 static void task2(void);
 static void task3(void);
@@ -67,17 +68,20 @@ static void task4(void);
   * @retval 		int
   */
 int main(void) {
-	/* setup MCU and Systick frequency */ 
-	setupMCUFrequency();
-	/* setup MCU PendSV and Systick interrupts */
-	setupMCUInterrupts();
-	
+	clock_setup();
+    usart_setup();
+
+	nvic_enable_irq(NVIC_SYSTICK_IRQ);
+	nvic_set_priority(NVIC_SYSTICK_IRQ, 5ul);
+	nvic_enable_irq(NVIC_PENDSV_IRQ);
+	nvic_set_priority(NVIC_PENDSV_IRQ, 6ul);
+
 	/* init and turn on status LED */
 	BSP_LED_Init();
 	BSP_LED_On();
 
 	/* enable global interurpts */
-	__enable_irq();
+	cm_enable_interrupts();
 
 	/* Start OS */
 	OS_Init(NULL);
@@ -196,33 +200,4 @@ static void task4(void) {
         BSP_LED_On();
         OS_delayTicks(OS_MS_TO_TICKS(500ul));
 	}
-}
-
-
-/**
-  * @brief		Setup MCU and Systick frequency
-  */
-static void setupMCUFrequency(void) {
-	/* Configure SysTick clock to generate tick every 1 ms */
-	SystemCoreClockUpdate();
-	SysTick_Config(SystemCoreClock/1000ul);
-  
-  return;
-}
-
-
-/**
-  * @brief		Setup MCU PendSV and Systick interrupts
-  */
-static void setupMCUInterrupts(void) {	
-	uint32_t realPriority;
-
-	/* setup PendSV to lowest possible priority */
-	NVIC_SetPriority(PendSV_IRQn, 0xFFFFFFFF);
-
-	/* set the SysTick priority to one higher than PendSV */
-	realPriority = NVIC_GetPriority(PendSV_IRQn);
-	NVIC_SetPriority(SysTick_IRQn, realPriority-1ul);
-
-	return;
 }

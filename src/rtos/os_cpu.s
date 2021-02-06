@@ -9,7 +9,7 @@
 
 
 /* ------------- public functions definitions ---------------------*/
-    .globl      PendSV_Handler
+    .globl      pend_sv_handler
 
 
 /* ------------- public variable definitions ----------------------*/
@@ -23,7 +23,7 @@
   * @brief  		Will do the context switching between tasks.
   */
     .thumb_func
-PendSV_Handler:
+pend_sv_handler:
     PUSH      {R4-R11}
 
     /* save current sp */

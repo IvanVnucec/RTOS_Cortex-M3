@@ -2,26 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(gdb) Launch",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "C:/Users/Ivan/Desktop/rtos/test/test_mutex/build/test_mutex.exe",
-            "args": [],
-            "stopAtEntry": true,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "C:/cygwin64/bin/gdb.exe",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": false
-                }
-            ]
-        },
-        {
             "type": "cortex-debug",
             "request": "launch",
             "name": "Debug (OpenOCD)",
@@ -32,10 +12,10 @@
             "executable": "${workspaceFolder}/build/rtos.elf",
             "device": "STM32F103C8T6",
             "configFiles": [
-                "interface/stlink.cfg",
+                "interface/stlink-v2.cfg",
                 "target/stm32f1x.cfg"
             ],
-            "svdFile": "${workspaceFolder}/boot/STM32F103.svd",
+            "svdFile": "${workspaceFolder}/stm32f103c8t6.svd",
             "swoConfig": {
                 "enabled": true,
                 "cpuFrequency": 8000000,
@@ -49,7 +29,7 @@
                     }
                 ]
             },
-            "armToolchainPath": "C:/eclipse/gcc-arm-none-eabi-10-2020-q4-major/bin/"
+            "armToolchainPath": "/usr/bin"
         }
     ]
 }

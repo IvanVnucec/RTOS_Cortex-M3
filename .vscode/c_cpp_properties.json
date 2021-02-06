@@ -7,22 +7,25 @@
                 "src/rtos",
                 "src/bsp",
                 "test",
-                "drv/CMSIS/Device/ST/STM32F1xx/Include",
-                "drv/CMSIS/Include"
+                "libopencm3/include"
             ],
-            "compilerPath": "C:/eclipse/gcc-arm-none-eabi-10-2020-q4-major/bin/arm-none-eabi-gcc.exe",
+            "compilerPath": "/usr/bin/arm-none-eabi-gcc",
             "defines": [
-                "STM32F103xB"
+                "STM32F1"
             ],
             "intelliSenseMode": "gcc-arm",
             "compilerArgs": [
+                "-mcpu=cortex-m3",
+                "-mthumb",
                 "-Wall",
-                "-fdata-sections",
-                "-ffunction-sections",
+                "-Werror",
+                "-std=gnu11",
+                "-O0",
                 "-g",
-                "-gdwarf-2"
+                "-ffunction-sections",
+                "-fdata-sections"
             ],
-            "cStandard": "c99"
+            "cStandard": "c11"
         }
     ],
     "version": 4
