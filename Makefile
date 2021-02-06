@@ -1,5 +1,3 @@
-.SECONDARY:
-
 PROJECT = rtos
 BUILD_DIR = build
 Q ?= @
@@ -12,6 +10,7 @@ GIT=git
 ECHO=@echo
 CAT=cat
 PYTHON ?= python
+STFLASH	= $(shell which st-flash)
 
 GIT_SHA := \"$(shell $(GIT) rev-parse --short HEAD)\"
 
@@ -69,7 +68,7 @@ CFLAGS += $(foreach i,$(INCLUDES),-I$(i))
 CFLAGS += $(foreach d,$(DEFINES),-D$(d))
 
 .PHONY: all test_docker test_local renode
-all: $(BUILD_DIR)/$(PROJECT).elf
+all: $(BUILD_DIR)/$(PROJECT).elf $(BUILD_DIR)/$(PROJECT).bin
 
 $(BUILD_DIR)/$(PROJECT).elf: $(SRCS_APP) $(OPENCM3_LIB)
 	$(ECHO) "  LD		$@"
@@ -83,6 +82,9 @@ $(RENODE_REPO):
 $(OPENCM3_LIB):
 	$(ECHO) "Building libopencm3"
 	$(Q)$(MAKE) -s -C $(OPENCM3_PATH) TARGETS=stm32/f1
+
+$(BUILD_DIR)/$(PROJECT).bin: $(BUILD_DIR)/$(PROJECT).elf
+	$(OCPY) -Obinary $< $@
 
 test_docker:
 	./docker-test.sh
@@ -98,3 +100,9 @@ clean:
 	$(ECHO) "  CLEAN		rm -rf $(BUILD_DIR)"
 	$(Q)rm -rf $(BUILD_DIR)
 	$(Q)make -C $(OPENCM3_PATH) TARGETS=stm32/f1 clean
+
+
+# Flash 64k Device
+.PHONY: flash
+flash: $(BUILD_DIR)/$(PROJECT).bin
+	$(STFLASH) $(FLASHSIZE) write $< 0x8000000
