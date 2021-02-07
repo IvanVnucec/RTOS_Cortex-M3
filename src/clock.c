@@ -4,8 +4,8 @@
 
 
 void clock_setup(void) {
-    /* 24 MHz from 8 MHz external crystal */
-    rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_24MHZ]);
+    /* 24 MHz from internal crystal */
+    rcc_clock_setup_pll(&rcc_hsi_configs[RCC_CLOCK_HSI_24MHZ]);
 
     /* 24 MHz / 8 => 4 MHz */
     systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);

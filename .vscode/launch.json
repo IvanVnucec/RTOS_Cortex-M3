@@ -4,6 +4,19 @@
         {
             "type": "cortex-debug",
             "request": "launch",
+            "name": "Renode",
+            "servertype": "external",
+            "cwd": "${workspaceFolder}",
+            "runToMain": false,
+            "executable": "${workspaceFolder}/build/rtos.elf",
+            "device": "STM32F103C8T6",
+            "gdbTarget": ":3333",
+            "svdFile": "${workspaceFolder}/stm32f103c8t6.svd",
+            "armToolchainPath": "/usr/bin"
+        },
+        {
+            "type": "cortex-debug",
+            "request": "launch",
             "name": "Debug (OpenOCD)",
             "servertype": "openocd",
             "cwd": "${workspaceFolder}",
@@ -16,19 +29,6 @@
                 "target/stm32f1x.cfg"
             ],
             "svdFile": "${workspaceFolder}/stm32f103c8t6.svd",
-            "swoConfig": {
-                "enabled": true,
-                "cpuFrequency": 8000000,
-                "swoFrequency": 2000000,
-                "source": "probe",
-                "decoders": [
-                    {
-                        "type": "console",
-                        "label": "ITM",
-                        "port": 0
-                    }
-                ]
-            },
             "armToolchainPath": "/usr/bin"
         }
     ]
