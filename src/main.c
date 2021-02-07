@@ -7,6 +7,7 @@
 /*******************************************************************************************************
  *                         INCLUDE FILES
  ******************************************************************************************************/
+#include <stdio.h>
 #include <libopencm3/cm3/nvic.h>
 
 #include "bsp_led.h"
@@ -68,6 +69,7 @@ static void task4(void);
   * @retval 		int
   */
 int main(void) {
+
 	clock_setup();
     usart_setup();
 
@@ -141,6 +143,8 @@ int main(void) {
 static void task1(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
 
+	printf("Task1\n");
+
 	while(1) {
 		OS_MutexPend(&mutex1, 60, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
@@ -160,6 +164,8 @@ static void task1(void) {
 static void task2(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;	
 
+	printf("Task2\n");
+
 	while(2) {
 		OS_MutexPend(&mutex1, 40, &errLocal);
 		if (errLocal == OS_MUTEX_ERROR_NONE) {
@@ -178,6 +184,8 @@ static void task2(void) {
   */
 static void task3(void) {
 	OS_MutexError_E errLocal = OS_MUTEX_ERROR_NONE;
+
+	printf("Task3\n");
 
 	OS_MutexPend(&mutex1, 1ul, &errLocal);
 	if (errLocal == OS_MUTEX_ERROR_NONE) {

@@ -62,9 +62,9 @@ int _write(int file, char *ptr, int len)
     if (file == STDOUT_FILENO || file == STDERR_FILENO) {
         for (i = 0; i < len; i++) {
             if (ptr[i] == '\n') {
-                usart_send_blocking(USART2, '\r');
+                usart_send_blocking(USART1, '\r');
             }
-            usart_send_blocking(USART2, ptr[i]);
+            usart_send_blocking(USART1, ptr[i]);
         }
         return i;
     }
