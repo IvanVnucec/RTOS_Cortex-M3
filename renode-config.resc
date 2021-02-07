@@ -8,6 +8,7 @@ mach create
 logLevel 0
 
 machine LoadPlatformDescription @platforms/cpus/stm32f103.repl
+machine LoadPlatformDescription @bluepill_board.repl
 
 # Create a terminal window showing the output of UART1
 showAnalyzer sysbus.uart1
