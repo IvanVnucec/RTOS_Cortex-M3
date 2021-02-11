@@ -3,7 +3,7 @@
 # Cortex-M3 RTOS
 - preemptive, 
 - priority-based, 
-- statically linked.
+- statically linked. 
 
 ## Description
 Cortex-M3 RTOS project with preemtive and priority-based scheduler, delay functions, mutexes and many more functionalities.  
