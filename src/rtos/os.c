@@ -42,6 +42,7 @@ OS_TCB_S *OS_TCBCurrent;
 OS_TCB_S *OS_TCBNext;
 
 static uint32_t OS_schedEnabled;
+static uint32_t OS_isInitialized;
 
 static OS_TCB_S taskIdleTCB;
 static uint32_t taskIdleStack[SIZEOF_TASKIDLESTACK];
@@ -225,22 +226,23 @@ void OS_Schedule(void) {
 void OS_Init(OS_Error_E *err) {
   OS_Error_E errLocal = OS_ERROR_NONE;
 
-  OS_schedEnabled = FALSE;
+    OS_isInitialized = TRUE;
+    OS_schedEnabled = FALSE;
 
     OS_TCBItemsInList = 0ul;
     OS_TCBListHead = NULL;
     OS_TCBCurrent = NULL;
 
     OS_TaskCreate(&taskIdleTCB, 
-      &OS_TaskIdle, 
-      OS_IDLE_TASK_PRIORITY,
-      (uint8_t *)"taskIdle",
-      taskIdleStack, 
-      SIZEOF_TASKIDLESTACK,
-      &errLocal);
+        &OS_TaskIdle, 
+        OS_IDLE_TASK_PRIORITY,
+        (uint8_t *)"taskIdle",
+        taskIdleStack, 
+        SIZEOF_TASKIDLESTACK,
+        &errLocal);
 
     if (err != NULL) {
-      *err = errLocal;
+        *err = errLocal;
     }
 }
 
@@ -356,9 +358,9 @@ void OS_TaskTerminate(void) {
   * @retval 		None
   */
 void OS_TickHandler(void) {
-  OS_TCB_S *i;
+    OS_TCB_S *i;
 
-  OS_ENTER_CRITICAL();
+    OS_ENTER_CRITICAL();
 
     OS_tickCounter++;
 
@@ -388,7 +390,9 @@ void OS_TickHandler(void) {
   * @retval 		None
   */
 void sys_tick_handler(void) {
-    OS_TickHandler();
+    if (OS_isInitialized == TRUE) {
+        OS_TickHandler();
+    }
 }
 
 

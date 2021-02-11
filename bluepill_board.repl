@@ -1,7 +1,0 @@
-UserButton: Miscellaneous.Button @ gpioPortC
-    -> gpioPortC@0
-
-UserLED: Miscellaneous.LED @ gpioPortC
-
-gpioPortC:
-    13 -> UserLED@0

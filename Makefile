@@ -67,17 +67,13 @@ INCLUDES += $(OPENCM3_INCLUDES)
 CFLAGS += $(foreach i,$(INCLUDES),-I$(i))
 CFLAGS += $(foreach d,$(DEFINES),-D$(d))
 
-.PHONY: all test_docker test_local renode
+.PHONY: all
 all: $(BUILD_DIR)/$(PROJECT).elf $(BUILD_DIR)/$(PROJECT).bin
 
 $(BUILD_DIR)/$(PROJECT).elf: $(SRCS_APP) $(OPENCM3_LIB)
 	$(ECHO) "  LD		$@"
 	$(Q)$(MKDIR) -p $(BUILD_DIR)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS_APP) $^ -o $@
-
-$(RENODE_REPO):
-	$(ECHO) "renode not found, cloning it..."
-	$(Q)$(GIT) clone https://github.com/renode/renode.git 2>1
 
 $(OPENCM3_LIB):
 	$(ECHO) "Building libopencm3"
@@ -86,14 +82,18 @@ $(OPENCM3_LIB):
 $(BUILD_DIR)/$(PROJECT).bin: $(BUILD_DIR)/$(PROJECT).elf
 	$(OCPY) -Obinary $< $@
 
-test_docker:
-	./docker-test.sh
 
-test_local: $(RENODE_REPO)
-	./run_tests.sh
+.PHONY: qemu
+qemu: $(BUILD_DIR)/$(PROJECT).elf
+	qemu-system-arm                                  	\
+	-cpu cortex-m3   									\
+	-machine lm3s6965evb   								\
+	-nographic   										\
+	-semihosting-config enable=on,target=native   		\
+	-gdb tcp::3333   									\
+	-S					   								\
+	-kernel $<
 
-start_renode: $(BUILD_DIR)/$(PROJECT).elf
-	./start.sh
 
 .PHONY: clean
 clean:
