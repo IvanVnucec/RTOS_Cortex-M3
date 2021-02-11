@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Renode",
+            "name": "QEMU",
             "type": "cortex-debug",
             "request": "launch",
             "servertype": "external",
@@ -12,7 +12,7 @@
             "device": "STM32F103C8T6",
             "gdbTarget": ":3333",
             "svdFile": "${workspaceFolder}/stm32f103c8t6.svd",
-            "armToolchainPath": "/usr/bin"
+            "armToolchainPath": "/usr/bin",
         },
         {
             "name": "Debug (OpenOCD)",

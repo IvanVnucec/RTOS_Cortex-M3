@@ -16,6 +16,12 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "launch qemu",
+            "isBackground": true,
+            "command": "./qemu_start.sh",
+            "type": "shell",
         }
     ]
 }
