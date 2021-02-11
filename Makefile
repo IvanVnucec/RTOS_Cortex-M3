@@ -92,7 +92,7 @@ test_docker:
 test_local: $(RENODE_REPO)
 	./run_tests.sh
 
-start_renode:
+start_renode: $(BUILD_DIR)/$(PROJECT).elf
 	./start.sh
 
 .PHONY: clean
