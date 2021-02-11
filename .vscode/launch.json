@@ -2,12 +2,12 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Renode",
             "type": "cortex-debug",
             "request": "launch",
-            "name": "Renode",
             "servertype": "external",
             "cwd": "${workspaceFolder}",
-            "runToMain": false,
+            "runToMain": true,
             "executable": "${workspaceFolder}/build/rtos.elf",
             "device": "STM32F103C8T6",
             "gdbTarget": ":3333",
@@ -15,9 +15,9 @@
             "armToolchainPath": "/usr/bin"
         },
         {
+            "name": "Debug (OpenOCD)",
             "type": "cortex-debug",
             "request": "launch",
-            "name": "Debug (OpenOCD)",
             "servertype": "openocd",
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build",
