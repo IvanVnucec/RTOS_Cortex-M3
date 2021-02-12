@@ -70,10 +70,10 @@ CFLAGS += $(foreach d,$(DEFINES),-D$(d))
 .PHONY: all
 all: $(BUILD_DIR)/$(PROJECT).elf $(BUILD_DIR)/$(PROJECT).bin
 
-$(BUILD_DIR)/$(PROJECT).elf: $(SRCS_APP) $(OPENCM3_LIB)
+$(BUILD_DIR)/$(PROJECT).elf: $(SRCS_APP) $(OPENCM3_LIB) Makefile
 	$(ECHO) "  LD		$@"
 	$(Q)$(MKDIR) -p $(BUILD_DIR)
-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS_APP) $^ -o $@
+	$(Q)$(CC) $(CFLAGS) $(LDFLAGS_APP) $(SRCS_APP) $(OPENCM3_LIB) -o $@
 
 $(OPENCM3_LIB):
 	$(ECHO) "Building libopencm3"
