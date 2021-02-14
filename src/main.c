@@ -69,7 +69,6 @@ static void task4(void);
   * @retval 		int
   */
 int main(void) {
-
 	clock_setup();
     usart_setup();
 
@@ -203,6 +202,7 @@ static void task3(void) {
   */
 static void task4(void) {
 	while(4) {
+		printf("Task4 %ld\n", OS_getOSTickCounter());
 	    BSP_LED_Off();
         OS_delayTicks(OS_MS_TO_TICKS(500ul));
         BSP_LED_On();

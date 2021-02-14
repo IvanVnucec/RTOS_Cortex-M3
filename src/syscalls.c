@@ -3,10 +3,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <libopencm3/stm32/usart.h>
 
 // LIBC SYSCALLS
 /////////////////////
+
+/* in uart0.s */
+extern void UART0_putc(char c);
+extern uint32_t UART0_getc(void);
 
 extern int end;
 
@@ -55,6 +58,9 @@ int _getpid(void) {
   return -1;
 }
 
+/* in order to print with printf functions on QEMU serial port
+printf string must end with '\n' character.
+*/
 int _write(int file, char *ptr, int len)
 {
     int i;
@@ -62,9 +68,13 @@ int _write(int file, char *ptr, int len)
     if (file == STDOUT_FILENO || file == STDERR_FILENO) {
         for (i = 0; i < len; i++) {
             if (ptr[i] == '\n') {
-                usart_send(USART1, '\r');
+                #ifdef QEMU_ENABLED
+                UART0_putc('\r');
+                #endif
             }
-            usart_send(USART1, ptr[i]);
+            #ifdef QEMU_ENABLED
+            UART0_putc(ptr[i]);
+            #endif
         }
         return i;
     }

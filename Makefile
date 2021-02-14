@@ -12,7 +12,6 @@ CAT=cat
 PYTHON ?= python
 STFLASH	= $(shell which st-flash)
 
-GIT_SHA := \"$(shell $(GIT) rev-parse --short HEAD)\"
 
 
 SRCS_APP = \
@@ -30,12 +29,10 @@ INCLUDES = \
 	src/rtos \
 	src/bsp
 
-RENODE_REPO = renode
 
 DEFINES += \
 	STM32F1 \
-	DSTM32F103xB \
-	GIT_SHA=$(GIT_SHA) \
+	DSTM32F103xB
 
 CFLAGS += \
   -mcpu=cortex-m3 \
@@ -56,8 +53,10 @@ LDFLAGS += \
   -Wl,-Map=$(BUILD_DIR)/$(PROJECT).map \
 
 LDSCRIPT = stm32f103c8t6.ld
+LDSCRIPT_QEMU = stm32f103c8t6_qemu.ld
 
 LDFLAGS_APP = $(LDFLAGS) -T $(LDSCRIPT)
+LDFLAGS_APP_QEMU = $(LDFLAGS) -T $(LDSCRIPT_QEMU)
 
 OPENCM3_PATH = ./libopencm3
 OPENCM3_INCLUDES = $(OPENCM3_PATH)/include
@@ -67,31 +66,45 @@ INCLUDES += $(OPENCM3_INCLUDES)
 CFLAGS += $(foreach i,$(INCLUDES),-I$(i))
 CFLAGS += $(foreach d,$(DEFINES),-D$(d))
 
+DEFINES_QEMU = $(DEFINES) QEMU_ENABLED
+INCLUDES_QEMU = $(OPENCM3_INCLUDES)
+CFLAGS_QEMU = $(CFLAGS) $(foreach i,$(INCLUDES_QEMU),-I$(i))
+CFLAGS_QEMU = $(CFLAGS) $(foreach d,$(DEFINES_QEMU),-D$(d))
+SRCS_APP_QEMU = $(SRCS_APP) src/uart0.s
+
 .PHONY: all
-all: $(BUILD_DIR)/$(PROJECT).elf $(BUILD_DIR)/$(PROJECT).bin
+all: $(BUILD_DIR)/$(PROJECT).elf $(BUILD_DIR)/$(PROJECT).bin $(BUILD_DIR)/$(PROJECT)_qemu.elf $(BUILD_DIR)/$(PROJECT)_qemu.bin
 
 $(BUILD_DIR)/$(PROJECT).elf: $(SRCS_APP) $(OPENCM3_LIB) Makefile
 	$(ECHO) "  LD		$@"
 	$(Q)$(MKDIR) -p $(BUILD_DIR)
 	$(Q)$(CC) $(CFLAGS) $(LDFLAGS_APP) $(SRCS_APP) $(OPENCM3_LIB) -o $@
 
+$(BUILD_DIR)/$(PROJECT)_qemu.elf: $(SRCS_APP_QEMU) $(OPENCM3_LIB) Makefile
+	$(ECHO) "  LD		$@"
+	$(Q)$(MKDIR) -p $(BUILD_DIR)
+	$(Q)$(CC) $(CFLAGS_QEMU) $(LDFLAGS_APP_QEMU) $(SRCS_APP_QEMU) $(OPENCM3_LIB) -o $@
+
 $(OPENCM3_LIB):
 	$(ECHO) "Building libopencm3"
 	$(Q)$(MAKE) -s -C $(OPENCM3_PATH) TARGETS=stm32/f1
 
 $(BUILD_DIR)/$(PROJECT).bin: $(BUILD_DIR)/$(PROJECT).elf
-	$(OCPY) -Obinary $< $@
+	$(Q)$(OCPY) -Obinary $< $@
+
+$(BUILD_DIR)/$(PROJECT)_qemu.bin: $(BUILD_DIR)/$(PROJECT)_qemu.elf
+	$(Q)$(OCPY) -Obinary $< $@
 
 
 .PHONY: qemu
-qemu: $(BUILD_DIR)/$(PROJECT).elf
-	qemu-system-arm                                  	\
-	-cpu cortex-m3   									\
-	-machine lm3s6965evb   								\
-	-nographic   										\
-	-semihosting-config enable=on,target=native   		\
-	-gdb tcp::3333   									\
-	-S					   								\
+qemu: $(BUILD_DIR)/$(PROJECT)_qemu.elf
+	qemu-system-arm \
+	-cpu cortex-m3 \
+	-machine lm3s6965evb \
+	-nographic \
+	-semihosting-config enable=on,target=native \
+	-gdb tcp::3333 \
+	-S \
 	-kernel $<
 
 
@@ -99,7 +112,6 @@ qemu: $(BUILD_DIR)/$(PROJECT).elf
 clean:
 	$(ECHO) "  CLEAN		rm -rf $(BUILD_DIR)"
 	$(Q)rm -rf $(BUILD_DIR)
-	$(Q)make -C $(OPENCM3_PATH) TARGETS=stm32/f1 clean
 
 
 # Flash 64k Device

@@ -8,11 +8,12 @@
             "servertype": "external",
             "cwd": "${workspaceFolder}",
             "runToMain": true,
-            "executable": "${workspaceFolder}/build/rtos.elf",
+            "executable": "${workspaceFolder}/build/rtos_qemu.elf",
             "device": "STM32F103C8T6",
             "gdbTarget": ":3333",
             "svdFile": "${workspaceFolder}/stm32f103c8t6.svd",
             "armToolchainPath": "/usr/bin",
+            "preLaunchTask": "build",
         },
         {
             "name": "Debug (OpenOCD)",
