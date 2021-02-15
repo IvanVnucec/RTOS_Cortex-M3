@@ -96,6 +96,7 @@ $(BUILD_DIR)/$(PROJECT)_qemu.bin: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 	$(Q)$(OCPY) -Obinary $< $@
 
 
+# delete -S \ line to disable QEMU waiting for debugger
 .PHONY: qemu
 qemu: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 	qemu-system-arm \
