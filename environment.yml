@@ -1,3 +1,4 @@
+name: env
 channels:
   - memfault
   - conda-forge
