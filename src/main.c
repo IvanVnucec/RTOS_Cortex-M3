@@ -8,6 +8,7 @@
  *                         INCLUDE FILES
  ******************************************************************************************************/
 #include <stdio.h>
+#include <stdlib.h>
 #include <libopencm3/cm3/nvic.h>
 
 #include "bsp_led.h"
@@ -63,12 +64,16 @@ static void task4(void);
  *                         PUBLIC FUNCTIONS DEFINITION
  ******************************************************************************************************/
 
+
 /**
   * @brief  		main function
   * @param 	    	None
   * @retval 		int
   */
 int main(void) {
+	// exit qemu with return value
+	// exit(0);
+	
 	clock_setup();
     usart_setup();
 
