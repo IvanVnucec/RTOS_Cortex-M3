@@ -17,6 +17,7 @@ jobs:
         - conda update -q conda
         - conda info -a
         - conda env create -f environment.yml
+        - conda activate
       before_script:
         - arm-none-eabi-gcc --version
       script:
