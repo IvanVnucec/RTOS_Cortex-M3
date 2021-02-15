@@ -1,20 +1,23 @@
 notifications:
   email: false
 
-env: GCC_URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2?revision=bc2c96c0-14b5-4bb4-9f18-bceb4050fee7?product=GNU%20Arm%20Embedded%20Toolchain,64-bit,,Linux,7-2018-q2-update
-
 jobs:
   include:
     - name: build target
       install:
-        - pushd .
-        - cd ~ 
-        - mkdir arm-gcc-toolchain
-        - wget -O $HOME/arm-gcc-toolchain/gcc.tar.bz2 $GCC_URL
-        - cd arm-gcc-toolchain
-        - tar -jxf gcc.tar.bz2 --strip=1
-        - popd
-        - export PATH=$HOME/arm-gcc-toolchain/bin:$PATH
+        - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
+            wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+          else
+            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+          fi
+        - bash miniconda.sh -b -p $HOME/miniconda
+        - source "$HOME/miniconda/etc/profile.d/conda.sh"
+        - hash -r
+        - conda config --set always_yes yes --set changeps1 no
+        - conda update -q conda
+        - conda info -a
+        - conda env create -f environment.yml
+        - conda activate env
       before_script:
         - arm-none-eabi-gcc --version
       script:
