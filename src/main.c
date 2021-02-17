@@ -72,7 +72,7 @@ static void task4(void);
   */
 int main(void) {
 	// exit qemu with return value
-	// exit(0);
+	//exit(5);
 	
 	clock_setup();
     usart_setup();

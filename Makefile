@@ -96,16 +96,15 @@ $(BUILD_DIR)/$(PROJECT)_qemu.bin: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 	$(Q)$(OCPY) -Obinary $< $@
 
 
-# delete -S \ line to disable QEMU waiting for debugger
+# add -S \ line to disable QEMU waiting for debugger
 .PHONY: qemu
 qemu: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 	qemu-system-arm \
 	-cpu cortex-m3 \
 	-machine lm3s6965evb \
 	-nographic \
-	-semihosting-config enable=on,target=native \
+	-semihosting \
 	-gdb tcp::3333 \
-	-S \
 	-kernel $<
 
 
