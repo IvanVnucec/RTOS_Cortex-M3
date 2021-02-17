@@ -25,4 +25,4 @@ WORKDIR /usr/project
 
 COPY . .
 
-CMD ["sh", "-c", "make"]
+CMD ["sh", "-c", "timeout 10 make qemu_test"]
