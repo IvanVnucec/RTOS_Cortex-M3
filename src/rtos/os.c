@@ -361,21 +361,23 @@ void OS_TickHandler(void) {
     OS_TCB_S *i;
 
     OS_ENTER_CRITICAL();
+    if (OS_isInitialized == TRUE) {
 
-    OS_tickCounter++;
+        OS_tickCounter++;
 
-    /* assumption: Idle task is first in TCB list */
-    i = OS_TCBListHead->TCBNext;
-    while(i != NULL)  {
-        if (i->taskTick > 0ul) {
-            i->taskTick--;
+        /* assumption: Idle task is first in TCB list */
+        i = OS_TCBListHead->TCBNext;
+        while(i != NULL)  {
+            if (i->taskTick > 0ul) {
+                i->taskTick--;
 
-            if (i->taskTick == 0u) {
-                i->taskState = OS_TASK_STATE_READY;
+                if (i->taskTick == 0u) {
+                    i->taskState = OS_TASK_STATE_READY;
+                }
             }
-        }
 
-        i = i->TCBNext;
+            i = i->TCBNext;
+        }
     }
 
     OS_EXIT_CRITICAL();
@@ -390,9 +392,8 @@ void OS_TickHandler(void) {
   * @retval 		None
   */
 void sys_tick_handler(void) {
-    if (OS_isInitialized == TRUE) {
-        OS_TickHandler();
-    }
+    
+    OS_TickHandler();
 }
 
 
