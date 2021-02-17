@@ -104,7 +104,6 @@ qemu: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 	-machine lm3s6965evb \
 	-nographic \
 	-semihosting \
-	-gdb tcp::3333 \
 	-kernel $<
 
 
