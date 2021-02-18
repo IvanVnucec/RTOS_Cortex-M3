@@ -7,9 +7,9 @@ jobs:
   include:
     - name: build target
       before_install:
-        - docker build -t="cont" .
-        - docker run --rm cont
+        - ./docker_run.sh
       script:
+        - ./check_build.sh
         
 
 #    - name: test
