@@ -1,28 +1,14 @@
-notifications:
-  email: false
+services:
+  - docker
 
 jobs:
   include:
     - name: build target
-      install:
-        - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-            wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-          else
-            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-          fi
-        - bash miniconda.sh -b -p $HOME/miniconda
-        - source "$HOME/miniconda/etc/profile.d/conda.sh"
-        - hash -r
-        - conda config --set always_yes yes --set changeps1 no
-        - conda update -q conda
-        - conda info -a
-        - conda env create -f environment.yml
-        - conda activate env
-      before_script:
-        - arm-none-eabi-gcc --version
+      before_install:
+        - docker build -t="cont" .
+        - docker run --rm cont
       script:
-        - cd ${TRAVIS_BUILD_DIR}
-        - make
+        
 
 #    - name: test
 #      before_script:
