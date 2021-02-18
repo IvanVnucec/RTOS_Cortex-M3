@@ -1,6 +1,6 @@
 #!/bin/bash
 # load constants
-. constants.env
+. ./scripts/constants.env
 
 # check if build folder exists
 echo "Searching for $ELF_FILE file in $BUILD_DIR_NAME folder..."

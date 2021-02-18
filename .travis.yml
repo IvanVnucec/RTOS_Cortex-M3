@@ -7,9 +7,10 @@ jobs:
   include:
     - name: build target
       before_install:
-        - ./docker_run.sh
+        - ./scripts/docker_run.sh
       script:
-        - ./check_build.sh
+        - ./scripts/check_build.sh
+        # add testing script
         
 
 #    - name: test

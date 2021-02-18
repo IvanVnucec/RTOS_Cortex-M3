@@ -1,6 +1,6 @@
 #!/bin/bash
 # load constants
-. constants.env
+. ./scripts/constants.env
 
 # recreate build folder, needed for Docker mount
 rm -rf $HOST_BUILD_DIR
