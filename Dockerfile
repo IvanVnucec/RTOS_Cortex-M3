@@ -2,27 +2,23 @@
 # sudo docker build -t="put_name_here" .
 # sudo docker run --rm put_name_here
 
-FROM ubuntu:20.04
-
-ENV REFRESHED_AT 2017-12-01
-
-WORKDIR /home/dev
+FROM continuumio/miniconda3
 
 RUN apt-get update -y
 RUN apt-get install -y \
-        qemu-system-arm \
-        wget \
-        make
+        qemu-system-arm 
 
-RUN wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2 \
-    && tar xvf gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2 \
-    && rm gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
+COPY environment.yml tmp/environment.yml
+COPY requirements.txt tmp/requirements.txt
 
-# Set up the compiler path
-ENV PATH="/home/dev/gcc-arm-none-eabi-6-2017-q2-update/bin:${PATH}"
+RUN conda env create -f tmp/environment.yml
 
-WORKDIR /usr/project
+RUN echo "source activate env" > ~/.bashrc
+
+ENV PATH /opt/conda/envs/env/bin:$PATH
+
+WORKDIR /app
 
 COPY . .
 
-CMD ["sh", "-c", "timeout 10 make qemu_test"]
+CMD ["sh", "-c", "make"]
