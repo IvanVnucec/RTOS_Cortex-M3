@@ -13,6 +13,7 @@ jobs:
         - ./scripts/docker_build_image.sh
         - ./scripts/docker_run_container.sh
       script:
+        - true
         # add testing script
         
 
