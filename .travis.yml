@@ -1,5 +1,8 @@
 language: generic
 
+notifications:
+  email: false
+
 services:
   - docker
 
@@ -7,9 +10,10 @@ jobs:
   include:
     - name: build target
       before_install:
-        - ./scripts/docker_run.sh
+        - ./scripts/docker_build_image.sh
+        - ./scripts/docker_run_container.sh
       script:
-        - ./scripts/check_build.sh
+        - true
         # add testing script
         
 
