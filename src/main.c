@@ -212,6 +212,6 @@ static void task4(void) {
         OS_delayTicks(OS_MS_TO_TICKS(500ul));
         BSP_LED_On();
         OS_delayTicks(OS_MS_TO_TICKS(500ul));
-		//exit(0);
+		exit(0)
 	}
 }
