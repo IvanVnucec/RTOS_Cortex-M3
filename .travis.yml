@@ -11,7 +11,7 @@ jobs:
     - name: build target
       before_install:
         - ./scripts/docker_build_image.sh
-        - ./script/docker_run_container.sh
+        - ./scripts/docker_run_container.sh
       script:
         # add testing script
         
