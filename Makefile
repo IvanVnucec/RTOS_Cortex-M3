@@ -112,7 +112,6 @@ qemu_debug: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 .PHONY: qemu_test
 qemu_test: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 	$(Q)$(MKDIR) -p $(LOGS_DIR)
-	# run in backgroung <=> &
 	qemu-system-arm \
 	-cpu cortex-m3 \
 	-machine lm3s6965evb \
