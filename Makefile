@@ -1,5 +1,6 @@
 PROJECT = rtos
 BUILD_DIR = build
+LOGS_DIR = logs
 Q ?= @
 
 CC = arm-none-eabi-gcc
@@ -99,7 +100,7 @@ $(BUILD_DIR)/$(PROJECT)_qemu.bin: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 # remove -S \ line to disable QEMU waiting for debugger
 .PHONY: qemu_debug
 qemu_debug: $(BUILD_DIR)/$(PROJECT)_qemu.elf
-	qemu-system-arm \
+	$(Q)qemu-system-arm \
 	-cpu cortex-m3 \
 	-machine lm3s6965evb \
 	-nographic \
@@ -110,12 +111,16 @@ qemu_debug: $(BUILD_DIR)/$(PROJECT)_qemu.elf
 
 .PHONY: qemu_test
 qemu_test: $(BUILD_DIR)/$(PROJECT)_qemu.elf
+	$(Q)$(MKDIR) -p $(LOGS_DIR)
 	qemu-system-arm \
 	-cpu cortex-m3 \
 	-machine lm3s6965evb \
 	-nographic \
 	-semihosting \
-	-kernel $<
+	-serial file:$(LOGS_DIR)/stdout.log \
+	-kernel $< \
+	&
+	sleep 5
 
 
 .PHONY: clean

@@ -8,19 +8,11 @@ services:
 
 jobs:
   include:
-    - name: build target
+    - name: build
       before_install:
         - ./scripts/docker_build_image.sh
-        - ./scripts/docker_run_container.sh
-      script:
-        - true
-        # add testing script
-        
 
-#    - name: test
-#      before_script:
-#        - gcc --version
-#      script:
-#        - cd ${TRAVIS_BUILD_DIR}
-#        - make test
-#        - bash <(curl -s https://codecov.io/bash)
+      script:
+        - ./scripts/docker_run_container.sh
+        #- ./scripts/check_tests.sh
+
