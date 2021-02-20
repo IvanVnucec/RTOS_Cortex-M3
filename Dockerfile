@@ -19,4 +19,4 @@ ENV PATH /opt/conda/envs/env/bin:$PATH
 
 WORKDIR /app
 
-CMD ["/bin/bash", "-c", "make"]
+CMD ["/bin/bash", "-c", "make qemu_test"]
