@@ -11,9 +11,9 @@ jobs:
     - name: build
       before_install:
         - ./scripts/docker_build_image.sh
-        
+
       script:
         - ./scripts/docker_run_container.sh
 
       after_success:
-        - ./script/check_tests.sh
+        - ./scripts/check_tests.sh
